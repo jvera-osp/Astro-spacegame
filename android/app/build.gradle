@@ -16,10 +16,32 @@ android {
              ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_21
+        targetCompatibility JavaVersion.VERSION_21
+    }
+    signingConfigs {
+        release {
+            def releaseKey = file("../keystores/release.keystore")
+            def debugKey = file("../keystores/debug-release.keystore")
+            def targetKey = releaseKey.exists() ? releaseKey : (debugKey.exists() ? debugKey : null)
+            if (targetKey != null) {
+                storeFile targetKey
+                storePassword System.getenv("ANDROID_KEYSTORE_PASSWORD") ?: (targetKey == releaseKey ? "AstroEsquiva2026!" : "AstroEsquivaDebug!")
+                keyAlias System.getenv("ANDROID_KEY_ALIAS") ?: (targetKey == releaseKey ? "astroesquiva" : "astrodebug")
+                keyPassword System.getenv("ANDROID_KEY_PASSWORD") ?: (System.getenv("ANDROID_KEYSTORE_PASSWORD") ?: (targetKey == releaseKey ? "AstroEsquiva2026!" : "AstroEsquivaDebug!"))
+            }
+        }
+    }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            def releaseKey = file("../keystores/release.keystore")
+            def debugKey = file("../keystores/debug-release.keystore")
+            if (releaseKey.exists() || debugKey.exists()) {
+                signingConfig signingConfigs.release
+            }
         }
     }
 }
