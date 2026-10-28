@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Astro Esquiva</string>
+    <string name="title_activity_main">Astro Esquiva: Aventura Espacial</string>
+    <string name="package_name">com.astroesquiva.spacegame</string>
+    <string name="custom_url_scheme">com.astroesquiva.spacegame</string>
+</resources>

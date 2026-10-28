@@ -1,0 +1,126 @@
+{
+  "appId": "com.astroesquiva.spacegame",
+  "billingApiVersion": "7.0.0",
+  "currency": "USD",
+  "products": [
+    {
+      "productId": "coins_100",
+      "type": "inapp",
+      "consumable": true,
+      "price": 0.99,
+      "priceFormatted": "$0.99 USD",
+      "title": {
+        "es": "Bolsa de 100 Monedas Estelares",
+        "en": "Pouch of 100 Star Coins"
+      },
+      "description": {
+        "es": "Paquete de 100 monedas para desbloquear naves y mejoras espaciales.",
+        "en": "Pack of 100 star coins to unlock space ships and fun upgrades."
+      },
+      "reward": {
+        "type": "coins",
+        "amount": 100
+      }
+    },
+    {
+      "productId": "coins_500",
+      "type": "inapp",
+      "consumable": true,
+      "price": 2.99,
+      "priceFormatted": "$2.99 USD",
+      "title": {
+        "es": "Cofre de 500 Monedas Cósmicas",
+        "en": "Chest of 500 Cosmic Coins"
+      },
+      "description": {
+        "es": "Cofre estelar con 500 monedas para personalizar tu nave espacial.",
+        "en": "Cosmic chest with 500 coins to customize your space ship."
+      },
+      "reward": {
+        "type": "coins",
+        "amount": 500
+      }
+    },
+    {
+      "productId": "coins_1500",
+      "type": "inapp",
+      "consumable": true,
+      "price": 6.99,
+      "priceFormatted": "$6.99 USD",
+      "title": {
+        "es": "Tesoro Galáctico de 1500 Monedas",
+        "en": "Galactic Treasure of 1500 Coins"
+      },
+      "description": {
+        "es": "Enorme tesoro estelar de 1500 monedas con bonificación incluida.",
+        "en": "Massive star treasure of 1500 coins with special bonus."
+      },
+      "reward": {
+        "type": "coins",
+        "amount": 1500
+      }
+    },
+    {
+      "productId": "skin_neon_voyager",
+      "type": "inapp",
+      "consumable": false,
+      "price": 1.99,
+      "priceFormatted": "$1.99 USD",
+      "title": {
+        "es": "Nave Neón Cósmica (Edición Especial)",
+        "en": "Neon Cosmic Voyager (Special Edition)"
+      },
+      "description": {
+        "es": "Desbloqueo permanente de la nave estelar Neón Voyager con efecto luminoso.",
+        "en": "Permanent unlock for Neon Voyager spaceship with glowing trail effect."
+      },
+      "reward": {
+        "type": "skin",
+        "skinId": "neon"
+      }
+    },
+    {
+      "productId": "skin_cosmic_dragon",
+      "type": "inapp",
+      "consumable": false,
+      "price": 2.99,
+      "priceFormatted": "$2.99 USD",
+      "title": {
+        "es": "Nave Dragón Cósmico (Mítica)",
+        "en": "Cosmic Dragon Ship (Mythic)"
+      },
+      "description": {
+        "es": "Desbloqueo permanente del mítico Dragón Cósmico interestelar.",
+        "en": "Permanent unlock of the mythical interstellar Cosmic Dragon ship."
+      },
+      "reward": {
+        "type": "skin",
+        "skinId": "dragon"
+      }
+    },
+    {
+      "productId": "remove_ads",
+      "type": "inapp",
+      "consumable": false,
+      "price": 3.99,
+      "priceFormatted": "$3.99 USD",
+      "title": {
+        "es": "Sin Anuncios y Pase Estelar",
+        "en": "Remove Ads & Star Pass"
+      },
+      "description": {
+        "es": "Experiencia de juego 100% limpia sin pausas publicitarias ni interrupciones.",
+        "en": "100% clean gameplay with zero commercial ads or pauses for families."
+      },
+      "reward": {
+        "type": "perk",
+        "perkId": "remove_ads"
+      }
+    }
+  ],
+  "implementationNotes": {
+    "googlePlayBillingPlugin": "@capacitor-community/in-app-purchase",
+    "restorePurchasesRequired": true,
+    "parentalGateNotice": "De acuerdo con las políticas de Google Play Familias, antes de abrir el flujo de compra para menores de 12 años, se recomienda presentar un desafío parental (ej. resolver una operación aritmética simple) o confirmación de un tutor legal."
+  }
+}

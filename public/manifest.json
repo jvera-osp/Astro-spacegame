@@ -1,0 +1,19 @@
+{
+  "name": "Astro Esquiva: Aventura Espacial",
+  "short_name": "Astro Esquiva",
+  "description": "Juego espacial infantil para Android donde esquivas obstáculos espaciales con controles táctiles fáciles.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#060814",
+  "theme_color": "#060814",
+  "categories": ["games", "kids", "arcade"],
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

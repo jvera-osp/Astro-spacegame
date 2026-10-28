@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    AndroidManifest.xml de Referencia para "Astro Esquiva: Aventura Espacial"
+    ID de Paquete: com.astroesquiva.spacegame
+    Cumple con la política de Google Play Designed for Families (COPPA) y Facturación de Google Play.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.astroesquiva.spacegame">
+
+    <!-- Permiso de Facturación Oficial de Google Play (Google Play In-App Billing Library) -->
+    <uses-permission android:name="com.android.vending.BILLING" />
+
+    <!-- Permisos de red para verificación de compras, conexión con Google Play y carga de recursos -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <!-- Retroalimentación háptica (vibración suave) para colisiones y recolección de monedas -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+
+    <!--
+        AVISO DE PRIVACIDAD PARA FAMILIAS:
+        Deliberadamente NO se incluyen permisos invasivos como:
+        - ACCESS_FINE_LOCATION (Ubicación GPS exacta)
+        - READ_CONTACTS (Contactos)
+        - READ_PHONE_STATE (Identificador telefónico IMEI)
+        - RECORD_AUDIO (Micrófono)
+        - CAMERA (Cámara)
+        Esto asegura la aprobación rápida en el programa para Familias y Niños de Google Play.
+    -->
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme"
+        android:hardwareAccelerated="true"
+        android:isSplitRequired="false">
+
+        <!-- Declaración para Google Play Families Policy (App dirigida a público infantil y familiar) -->
+        <meta-data
+            android:name="isChildDirectedApp"
+            android:value="true" />
+
+        <activity
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode"
+            android:name=".MainActivity"
+            android:label="@string/title_activity_main"
+            android:theme="@style/AppTheme.NoActionBarLaunch"
+            android:launchMode="singleTask"
+            android:screenOrientation="portrait"
+            android:exported="true">
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+        </activity>
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+    </application>
+</manifest>

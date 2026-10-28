@@ -1,0 +1,23 @@
+{
+  "appId": "com.astroesquiva.spacegame",
+  "appName": "Astro Esquiva: Aventura Espacial",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https",
+    "cleartext": false
+  },
+  "android": {
+    "backgroundColor": "#060814",
+    "allowMixedContent": false,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": false
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 1500,
+      "backgroundColor": "#060814",
+      "showSpinner": false
+    }
+  }
+}

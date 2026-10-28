@@ -1,0 +1,43 @@
+========================================================================
+   ASTRO ESQUIVA - PROYECTO ANDROID PRE-COMPILADO PARA GOOGLE PLAY
+========================================================================
+
+¡Hola! Este paquete contiene TODO el código nativo de Android listo con los
+archivos web ya compilados e integrados. NO NECESITAS INSTALAR NODE NI NPM.
+
+------------------------------------------------------------------------
+PASO 1: ABRIR EN ANDROID STUDIO
+------------------------------------------------------------------------
+1. Descarga e instala Android Studio (gratuito desde developer.android.com).
+2. Extrae este archivo ZIP en una carpeta de tu computadora.
+3. Abre Android Studio y haz clic en:
+   "Open" (o "File > Open...")
+4. Selecciona la carpeta "android" que acabas de descomprimir.
+5. Android Studio detectará el proyecto automáticamente y sincronizará
+   las dependencias de Gradle.
+
+------------------------------------------------------------------------
+PASO 2: GENERAR EL APK O ANDROID APP BUNDLE (.AAB) PARA GOOGLE PLAY
+------------------------------------------------------------------------
+1. En el menú superior de Android Studio, haz clic en:
+   "Build" > "Generate Signed Bundle / APK..."
+2. Selecciona "Android App Bundle" (requerido por Google Play Store).
+3. Haz clic en "Next".
+4. Selecciona o crea tu llave de firma (Key store path).
+   (Si es la primera vez, haz clic en "Create new..." y guarda la contraseña).
+5. Selecciona la variante "release" y haz clic en "Finish".
+6. ¡Listo! En unos segundos tendrás tu archivo .aab listo para subir a Google Play Console.
+
+------------------------------------------------------------------------
+PASO 3: CONFIGURAR LOS PAGOS EN GOOGLE PLAY CONSOLE
+------------------------------------------------------------------------
+1. Ve a Google Play Console (play.google.com/console).
+2. Entra en tu aplicación Astro Esquiva.
+3. En el menú lateral izquierdo ve a:
+   "Monetización" > "Productos dentro de la aplicación" (In-app products).
+4. Haz clic en el botón "Importar / Exportar" (arriba a la derecha).
+5. Selecciona el archivo "google-play-catalog.csv" incluido en esta descarga.
+6. ¡Todos los productos, precios y descripciones se importarán automáticamente!
+
+Cualquier duda, el juego ya cuenta con la librería oficial
+com.android.billingclient:billing:7.0.0 integrada en app/build.gradle.

@@ -1,0 +1,13 @@
+Product ID,Published State,Purchase Type,Auto Translate,Locale,Title,Description,Price
+coins_100,published,managed_by_android,false,es_ES,Bolsa de 100 Monedas Estelares,Paquete de 100 monedas para desbloquear naves y mejoras espaciales,0.99
+coins_100,published,managed_by_android,false,en_US,Pouch of 100 Star Coins,Pack of 100 star coins to unlock space ships and fun upgrades,0.99
+coins_500,published,managed_by_android,false,es_ES,Cofre de 500 Monedas Cósmicas,Cofre estelar con 500 monedas para personalizar tu nave espacial,2.99
+coins_500,published,managed_by_android,false,en_US,Chest of 500 Cosmic Coins,Cosmic chest with 500 coins to customize your space ship,2.99
+coins_1500,published,managed_by_android,false,es_ES,Tesoro Galáctico de 1500 Monedas,Enorme tesoro estelar de 1500 monedas con bonificación incluida,6.99
+coins_1500,published,managed_by_android,false,en_US,Galactic Treasure of 1500 Coins,Massive star treasure of 1500 coins with special bonus,6.99
+skin_neon_voyager,published,managed_by_android,false,es_ES,Nave Neón Cósmica (Edición Especial),Desbloqueo permanente de la nave estelar Neón Voyager con efecto luminoso,1.99
+skin_neon_voyager,published,managed_by_android,false,en_US,Neon Cosmic Voyager (Special Edition),Permanent unlock for Neon Voyager spaceship with glowing trail effect,1.99
+skin_cosmic_dragon,published,managed_by_android,false,es_ES,Nave Dragón Cósmico (Mítica),Desbloqueo permanente del mítico Dragón Cósmico interestelar,2.99
+skin_cosmic_dragon,published,managed_by_android,false,en_US,Cosmic Dragon Ship (Mythic),Permanent unlock of the mythical interstellar Cosmic Dragon ship,2.99
+remove_ads,published,managed_by_android,false,es_ES,Sin Anuncios y Pase Estelar,Experiencia de juego 100% limpia sin pausas publicitarias ni interrupciones,3.99
+remove_ads,published,managed_by_android,false,en_US,Remove Ads & Star Pass,100% clean gameplay with zero commercial ads or pauses for families,3.99

@@ -1,0 +1,9 @@
+Product ID,Published State,Purchase Type,Auto-Translate,Locale; Title; Description,Price
+"astro_lives_pack_3","published","managed_product","false","es-ES; Rescate Cósmico (+3 Vidas); Pack de 3 vidas extra para continuar tu viaje estelar al chocar.","490000"
+"astro_shields_pack_3","published","managed_product","false","es-ES; Burbuja de Escudo Temporal (+2); Genera escudos reforzados al iniciar tu vuelo para protegerte.","490000"
+"astro_magnet_pack_2","published","managed_product","false","es-ES; Súper Imán Estelar (+3 Usos); Atrae automáticamente monedas y gemas lejanas durante el juego.","490000"
+"iap_starter_pack","published","managed_product","false","es-ES; Pack Astronauta Principiante; 300 Monedas estelares + 5 Gemas galácticas para principiantes.","490000"
+"iap_pocket_stars","published","managed_product","false","es-ES; Bolsita de Estrellas (+Vidas); 700 Monedas estelares + 12 Gemas galácticas.","990000"
+"iap_galactic_chest","published","managed_product","false","es-ES; Cofre Galáctico; 2,500 Monedas estelares + 45 Gemas para desbloquear naves.","1990000"
+"iap_cosmic_vault","published","managed_product","false","es-ES; Caja Fuerte Cósmica; 8,000 Monedas estelares + 150 Gemas galácticas.","3990000"
+"astro_vip_astronaut_pass","published","managed_product","false","es-ES; Pase Astronauta VIP Permanente; Desbloquea Halcón Dorado VIP, 2000 monedas, 50 gemas y restaurar compras de por vida.","3990000"

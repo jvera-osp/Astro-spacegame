@@ -1,0 +1,6 @@
+{
+  "name": "Astro Esquiva: Aventura Espacial",
+  "description": "Juego espacial infantil para Android donde esquivas obstáculos espaciales con controles táctiles fáciles y compras integradas simuladas.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
