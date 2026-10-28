@@ -26,11 +26,11 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({
   onGoHome,
 }) => {
   return (
-    <div className="absolute inset-0 z-40 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-6 select-none animate-in fade-in zoom-in-95 duration-200">
-      <div className="w-full max-w-sm bg-slate-900 border border-slate-700/80 rounded-3xl p-6 shadow-2xl flex flex-col items-center text-center gap-4">
+    <div className="absolute inset-0 z-40 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 select-none animate-in fade-in zoom-in-95 duration-200 overflow-y-auto">
+      <div className="w-full max-w-sm max-h-[94dvh] overflow-y-auto bg-slate-900 border border-slate-700/80 rounded-3xl p-4 sm:p-6 shadow-2xl flex flex-col items-center text-center gap-3 sm:gap-4">
         {/* Friendly Trophy / Mascot Badge */}
-        <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-amber-400 to-pink-500 p-1 shadow-lg shadow-amber-500/20 animate-bounce">
-          <div className="w-full h-full rounded-full bg-slate-950 flex items-center justify-center text-4xl">
+        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-tr from-amber-400 to-pink-500 p-1 shadow-lg shadow-amber-500/20 animate-bounce shrink-0">
+          <div className="w-full h-full rounded-full bg-slate-950 flex items-center justify-center text-3xl sm:text-4xl">
             {isNewRecord ? '🏆' : '🌟'}
           </div>
         </div>

@@ -21,9 +21,10 @@ export const PrivacyPolicyModal: React.FC<PrivacyPolicyModalProps> = ({ onClose 
   };
 
   return (
-    <div className="absolute inset-0 z-50 bg-slate-950/95 backdrop-blur-md flex flex-col p-4 sm:p-6 select-none animate-in fade-in duration-200 text-white">
-      {/* Top Header */}
-      <div className="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
+    <div className="absolute inset-0 z-50 bg-slate-950/95 backdrop-blur-md flex flex-col select-none animate-in fade-in duration-200 text-white">
+      <div className="w-full max-w-xl mx-auto h-full flex flex-col p-3 sm:p-5 overflow-hidden">
+        {/* Top Header */}
+        <div className="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
         <div className="flex items-center gap-2.5">
           <div className="w-10 h-10 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shadow-md">
             <ShieldCheck className="w-5 h-5" />
@@ -286,5 +287,6 @@ export const PrivacyPolicyModal: React.FC<PrivacyPolicyModalProps> = ({ onClose 
         </button>
       </div>
     </div>
-  );
+  </div>
+);
 };

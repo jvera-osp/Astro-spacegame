@@ -94,8 +94,8 @@ export const GooglePlayIapModal: React.FC<GooglePlayIapModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/75 backdrop-blur-sm p-0 sm:p-4 animate-in fade-in duration-200">
-      <div className="w-full sm:max-w-md bg-slate-900 border-t sm:border border-slate-700 rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col text-slate-100">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/75 backdrop-blur-sm p-0 sm:p-4 animate-in fade-in duration-200 overflow-y-auto">
+      <div className="w-full sm:max-w-md max-h-[92dvh] overflow-y-auto bg-slate-900 border-t sm:border border-slate-700 rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col text-slate-100">
         {/* Google Play top bar */}
         <div className="flex items-center justify-between px-5 py-3.5 bg-slate-950/80 border-b border-slate-800">
           <div className="flex items-center gap-2">

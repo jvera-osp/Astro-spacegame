@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Wifi, BatteryMedium, Signal, Smartphone, Maximize2, Minimize2, Download } from 'lucide-react';
+import { Maximize2, Smartphone } from 'lucide-react';
 
 interface AndroidFrameProps {
   children: React.ReactNode;
@@ -10,39 +10,37 @@ interface AndroidFrameProps {
 
 export const AndroidFrame: React.FC<AndroidFrameProps> = ({
   children,
-  onAndroidBack,
-  onAndroidHome,
 }) => {
-  const [currentTime, setCurrentTime] = useState('10:28');
   const [isFrameMode, setIsFrameMode] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
-      // Default to full on real mobile (< 768px), and frame mode on large screens
-      return window.innerWidth >= 900;
+      // Default to mobile frame only on large desktop screens (> 1024px)
+      return window.innerWidth >= 1024;
     }
     return false;
   });
 
+  // Handle auto-switching if window resizes below mobile/tablet breakpoint
   useEffect(() => {
-    const updateClock = () => {
-      const now = new Date();
-      const hours = now.getHours().toString().padStart(2, '0');
-      const mins = now.getMinutes().toString().padStart(2, '0');
-      setCurrentTime(`${hours}:${mins}`);
+    const handleResize = () => {
+      if (window.innerWidth < 768 && isFrameMode) {
+        setIsFrameMode(false);
+      }
     };
-    updateClock();
-    const interval = setInterval(updateClock, 30000);
-    return () => clearInterval(interval);
-  }, []);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [isFrameMode]);
 
   return (
-    <div className="relative w-full h-screen h-[100dvh] flex items-center justify-center bg-slate-950 overflow-hidden select-none">
-      {/* Top control bar on desktop for toggling Android Frame / Fullscreen */}
-      <div className="absolute top-2 right-3 z-50 flex items-center gap-2 pointer-events-auto">
+    <div className="relative w-full h-[100dvh] min-h-[100dvh] flex items-center justify-center bg-slate-950 overflow-hidden select-none">
+      {/* Background Starfield Glow on Large Screens */}
+      <div className="absolute inset-0 pointer-events-none opacity-40 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900/40 via-slate-950 to-slate-950" />
 
+      {/* Top desktop control to toggle between Mobile Frame & Fullscreen */}
+      <div className="absolute top-2 right-2 sm:top-3 sm:right-3 z-50 hidden sm:flex items-center gap-2 pointer-events-auto">
         <button
           onClick={() => setIsFrameMode((prev) => !prev)}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-900/80 hover:bg-slate-850 text-slate-200 border border-slate-700/60 shadow-lg backdrop-blur-md transition-all active:scale-95"
-          title="Cambiar entre modo celular y pantalla completa"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-900/90 hover:bg-slate-800 text-slate-200 border border-slate-700/80 shadow-xl backdrop-blur-md transition-all active:scale-95"
+          title="Alternar entre vista celular y pantalla completa"
         >
           {isFrameMode ? (
             <>
@@ -52,68 +50,22 @@ export const AndroidFrame: React.FC<AndroidFrameProps> = ({
           ) : (
             <>
               <Smartphone className="w-3.5 h-3.5 text-amber-400" />
-              <span>Modo Celular Android</span>
+              <span>Vista Celular</span>
             </>
           )}
         </button>
       </div>
 
-      {isFrameMode ? (
-        /* Android Phone Frame */
-        <div className="relative w-full max-w-[430px] h-[92vh] max-h-[880px] bg-black rounded-[48px] p-3 shadow-2xl shadow-cyan-950/40 border-[8px] border-slate-800 flex flex-col overflow-hidden ring-1 ring-slate-700/50">
-          {/* Hardware notch / punch hole */}
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 w-4 h-4 bg-black rounded-full z-40 border border-slate-800/80 pointer-events-none" />
-
-          {/* Android Status Bar */}
-          <div className="relative z-30 h-8 px-5 flex items-center justify-between text-xs text-slate-300 font-medium select-none shrink-0 bg-transparent">
-            <span className="font-semibold tracking-wide text-[12px]">{currentTime}</span>
-            <div className="flex items-center gap-2 text-slate-300">
-              <Signal className="w-3.5 h-3.5" />
-              <Wifi className="w-3.5 h-3.5" />
-              <div className="flex items-center gap-1 text-[11px]">
-                <span>98%</span>
-                <BatteryMedium className="w-4 h-4 text-emerald-400" />
-              </div>
-            </div>
-          </div>
-
-          {/* Screen Display Area */}
-          <div className="relative flex-1 w-full rounded-[36px] overflow-hidden bg-slate-950 flex flex-col">
-            {children}
-          </div>
-
-          {/* Android Navigation Soft Bar */}
-          <div className="relative z-30 h-10 px-12 flex items-center justify-around bg-black text-slate-400 select-none shrink-0">
-            <button
-              onClick={onAndroidBack}
-              className="p-2 hover:text-white active:scale-90 transition-transform"
-              aria-label="Atrás"
-            >
-              <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-              </svg>
-            </button>
-            <button
-              onClick={onAndroidHome}
-              className="p-2 hover:text-white active:scale-90 transition-transform"
-              aria-label="Inicio"
-            >
-              <div className="w-3.5 h-3.5 rounded-full border-2 border-current" />
-            </button>
-            <button
-              className="p-2 hover:text-white active:scale-90 transition-transform"
-              aria-label="Apps recientes"
-            >
-              <div className="w-3 h-3 rounded-sm border-2 border-current" />
-            </button>
-          </div>
-        </div>
-      ) : (
-        /* Fullscreen Viewport Mode (Ideal for Mobile Devices & Full Window) */
-        <div className="relative w-full h-full flex flex-col overflow-hidden bg-slate-950">
-          {children}
-        </div>
-      )}
+      {/* Main Container */}
+      <div
+        className={`relative w-full h-full flex flex-col overflow-hidden bg-slate-950 transition-all duration-300 ${
+          isFrameMode
+            ? 'sm:max-w-[430px] sm:h-[95dvh] sm:max-h-[900px] sm:rounded-[36px] sm:border-2 sm:border-slate-800/90 sm:shadow-[0_0_50px_rgba(14,165,233,0.15)] sm:ring-1 sm:ring-slate-700/40'
+            : 'max-w-none'
+        }`}
+      >
+        {children}
+      </div>
     </div>
   );
 };

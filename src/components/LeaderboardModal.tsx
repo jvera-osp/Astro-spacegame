@@ -29,9 +29,10 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
   };
 
   return (
-    <div className="absolute inset-0 z-40 bg-slate-950/90 backdrop-blur-md flex flex-col p-4 sm:p-6 select-none animate-in fade-in duration-200 text-white">
-      {/* Header */}
-      <div className="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
+    <div className="absolute inset-0 z-40 bg-slate-950/90 backdrop-blur-md flex flex-col select-none animate-in fade-in duration-200 text-white">
+      <div className="w-full max-w-xl mx-auto h-full flex flex-col p-3 sm:p-5 overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
         <div className="flex items-center gap-2.5">
           <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-400 to-yellow-500 flex items-center justify-center text-slate-950 shadow-lg shadow-amber-500/20">
             <Trophy className="w-5 h-5 fill-slate-950" />
@@ -169,6 +170,7 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
       {/* Footer Info */}
       <div className="pt-3 text-center text-[11px] text-slate-400 border-t border-slate-850 shrink-0">
         💡 Cada obstáculo que esquivas suma <strong className="text-amber-300">+10 puntos</strong> a tu récord.
+      </div>
       </div>
     </div>
   );

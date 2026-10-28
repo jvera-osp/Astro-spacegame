@@ -20,8 +20,8 @@ export const PauseModal: React.FC<PauseModalProps> = ({
   onToggleMute,
 }) => {
   return (
-    <div className="absolute inset-0 z-40 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-6 select-none animate-in fade-in duration-150">
-      <div className="w-full max-w-xs bg-slate-900 border border-slate-700/80 rounded-3xl p-6 shadow-2xl flex flex-col items-center text-center gap-4">
+    <div className="absolute inset-0 z-40 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 select-none animate-in fade-in duration-150 overflow-y-auto">
+      <div className="w-full max-w-xs max-h-[94dvh] overflow-y-auto bg-slate-900 border border-slate-700/80 rounded-3xl p-4 sm:p-6 shadow-2xl flex flex-col items-center text-center gap-3 sm:gap-4">
         <div className="w-14 h-14 rounded-2xl bg-amber-400/20 border border-amber-400/40 flex items-center justify-center text-2xl">
           ⏸️
         </div>

@@ -58,26 +58,26 @@ export const ShopModal: React.FC<ShopModalProps> = ({
   return (
     <div className="absolute inset-0 z-40 bg-slate-950/90 backdrop-blur-md flex flex-col overflow-hidden text-white select-none animate-in fade-in duration-200">
       {/* Header */}
-      <div className="px-4 py-3 bg-slate-900 border-b border-slate-800 flex items-center justify-between shrink-0">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-400 to-pink-500 flex items-center justify-center text-slate-950 font-black shadow-md">
+      <div className="w-full max-w-2xl mx-auto px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-900 border-b border-slate-800 flex items-center justify-between shrink-0 gap-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-gradient-to-br from-amber-400 to-pink-500 flex items-center justify-center text-slate-950 font-black shadow-md shrink-0">
             🚀
           </div>
-          <div>
-            <h2 className="text-base font-black tracking-tight leading-tight">Tienda Galáctica</h2>
-            <p className="text-[11px] text-slate-400">Naves, objetos y compras integradas</p>
+          <div className="truncate">
+            <h2 className="text-sm sm:text-base font-black tracking-tight leading-tight truncate">Tienda Galáctica</h2>
+            <p className="text-[10px] sm:text-[11px] text-slate-400 truncate">Naves, objetos y compras</p>
           </div>
         </div>
 
         {/* Currency balances & Close */}
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5 bg-slate-950 px-2.5 py-1 rounded-xl border border-slate-800">
-            <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          <div className="flex items-center gap-1 bg-slate-950 px-2 sm:px-2.5 py-1 rounded-xl border border-slate-800">
+            <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400 shrink-0" />
             <span className="text-xs font-bold text-amber-300 tabular-nums">{coins}</span>
           </div>
 
-          <div className="flex items-center gap-1.5 bg-slate-950 px-2.5 py-1 rounded-xl border border-slate-800">
-            <Gem className="w-3.5 h-3.5 text-pink-400 fill-pink-400" />
+          <div className="flex items-center gap-1 bg-slate-950 px-2 sm:px-2.5 py-1 rounded-xl border border-slate-800">
+            <Gem className="w-3 h-3 text-pink-400 fill-pink-400 shrink-0" />
             <span className="text-xs font-bold text-pink-300 tabular-nums">{gems}</span>
           </div>
 
@@ -86,104 +86,106 @@ export const ShopModal: React.FC<ShopModalProps> = ({
               sounds.playButtonTap();
               onClose();
             }}
-            className="w-8 h-8 rounded-xl bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-300 active:scale-90 transition-transform ml-1"
+            className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-300 active:scale-90 transition-transform ml-0.5"
+            aria-label="Cerrar tienda"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="px-3 pt-2.5 pb-2 bg-slate-900/50 border-b border-slate-800 flex items-center gap-1.5 shrink-0 overflow-x-auto">
-        <button
-          onClick={() => {
-            sounds.playButtonTap();
-            setActiveTab('ships');
-          }}
-          className={`py-1.5 px-3 rounded-xl text-xs font-bold transition-all whitespace-nowrap shrink-0 flex items-center gap-1.5 ${
-            activeTab === 'ships'
-              ? 'bg-amber-400 text-slate-950 shadow-md shadow-amber-400/20'
-              : 'bg-slate-800/80 text-slate-400 hover:text-white'
-          }`}
-        >
-          <span>🚀 Flota</span>
-        </button>
-
-        <button
-          onClick={() => {
-            sounds.playButtonTap();
-            setActiveTab('consumables');
-          }}
-          className={`py-1.5 px-3 rounded-xl text-xs font-bold transition-all whitespace-nowrap shrink-0 flex items-center gap-1.5 ${
-            activeTab === 'consumables'
-              ? 'bg-emerald-400 text-slate-950 shadow-md shadow-emerald-400/20'
-              : 'bg-slate-800/80 text-slate-400 hover:text-white'
-          }`}
-        >
-          <span>❤️ Vidas & Escudos</span>
-        </button>
-
-        <button
-          onClick={() => {
-            sounds.playButtonTap();
-            setActiveTab('accessories');
-          }}
-          className={`py-1.5 px-3 rounded-xl text-xs font-bold transition-all whitespace-nowrap shrink-0 flex items-center gap-1.5 ${
-            activeTab === 'accessories'
-              ? 'bg-amber-400 text-slate-950 shadow-md shadow-amber-400/20'
-              : 'bg-slate-800/80 text-slate-400 hover:text-white'
-          }`}
-        >
-          <span>👑 Gorros</span>
-        </button>
-
-        <button
-          onClick={() => {
-            sounds.playButtonTap();
-            setActiveTab('iap');
-          }}
-          className={`py-1.5 px-3 rounded-xl text-xs font-bold transition-all whitespace-nowrap shrink-0 flex items-center gap-1.5 ${
-            activeTab === 'iap'
-              ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-md shadow-pink-500/20'
-              : 'bg-slate-800/80 text-slate-400 hover:text-white'
-          }`}
-        >
-          <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-          <span>Compras (IAP)</span>
-        </button>
-      </div>
-
-      {/* Daily Free Reward Banner */}
-      <div className="px-4 pt-2 shrink-0">
-        <div className="bg-gradient-to-r from-amber-500/20 via-pink-500/20 to-purple-500/20 border border-amber-500/40 rounded-2xl p-2 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Gift className="w-4 h-4 text-amber-400 animate-bounce" />
-            <div>
-              <p className="text-xs font-bold text-amber-200">¡Regalo Diario para Astronautas!</p>
-              <p className="text-[10px] text-slate-400">+150 Monedas y +5 Gemas gratis</p>
-            </div>
-          </div>
+      <div className="w-full max-w-2xl mx-auto flex-1 flex flex-col min-h-0 overflow-hidden">
+        {/* Tabs */}
+        <div className="px-3 pt-2.5 pb-2 bg-slate-900/50 border-b border-slate-800 flex items-center gap-1.5 shrink-0 overflow-x-auto scrollbar-none">
           <button
             onClick={() => {
-              if (!hasClaimedDaily) {
-                sounds.playGem();
-                onClaimDailyGift();
-              }
+              sounds.playButtonTap();
+              setActiveTab('ships');
             }}
-            disabled={hasClaimedDaily}
-            className={`px-3 py-1 rounded-xl font-bold text-xs shadow-md transition-all active:scale-95 ${
-              hasClaimedDaily
-                ? 'bg-slate-800 text-slate-500 cursor-not-allowed'
-                : 'bg-amber-400 hover:bg-amber-300 text-slate-950 animate-pulse'
+            className={`py-1.5 px-3 rounded-xl text-xs font-bold transition-all whitespace-nowrap shrink-0 flex items-center gap-1.5 ${
+              activeTab === 'ships'
+                ? 'bg-amber-400 text-slate-950 shadow-md shadow-amber-400/20'
+                : 'bg-slate-800/80 text-slate-400 hover:text-white'
             }`}
           >
-            {hasClaimedDaily ? 'Reclamado' : '¡Reclamar!'}
+            <span>🚀 Flota</span>
+          </button>
+
+          <button
+            onClick={() => {
+              sounds.playButtonTap();
+              setActiveTab('consumables');
+            }}
+            className={`py-1.5 px-3 rounded-xl text-xs font-bold transition-all whitespace-nowrap shrink-0 flex items-center gap-1.5 ${
+              activeTab === 'consumables'
+                ? 'bg-emerald-400 text-slate-950 shadow-md shadow-emerald-400/20'
+                : 'bg-slate-800/80 text-slate-400 hover:text-white'
+            }`}
+          >
+            <span>❤️ Vidas & Escudos</span>
+          </button>
+
+          <button
+            onClick={() => {
+              sounds.playButtonTap();
+              setActiveTab('accessories');
+            }}
+            className={`py-1.5 px-3 rounded-xl text-xs font-bold transition-all whitespace-nowrap shrink-0 flex items-center gap-1.5 ${
+              activeTab === 'accessories'
+                ? 'bg-amber-400 text-slate-950 shadow-md shadow-amber-400/20'
+                : 'bg-slate-800/80 text-slate-400 hover:text-white'
+            }`}
+          >
+            <span>👑 Gorros</span>
+          </button>
+
+          <button
+            onClick={() => {
+              sounds.playButtonTap();
+              setActiveTab('iap');
+            }}
+            className={`py-1.5 px-3 rounded-xl text-xs font-bold transition-all whitespace-nowrap shrink-0 flex items-center gap-1.5 ${
+              activeTab === 'iap'
+                ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-md shadow-pink-500/20'
+                : 'bg-slate-800/80 text-slate-400 hover:text-white'
+            }`}
+          >
+            <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+            <span>Compras (IAP)</span>
           </button>
         </div>
-      </div>
 
-      {/* Content Area with smooth scroll */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3 pb-8">
+        {/* Daily Free Reward Banner */}
+        <div className="px-3 sm:px-4 pt-2 shrink-0">
+          <div className="bg-gradient-to-r from-amber-500/20 via-pink-500/20 to-purple-500/20 border border-amber-500/40 rounded-2xl p-2 sm:p-2.5 flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <Gift className="w-4 h-4 text-amber-400 animate-bounce shrink-0" />
+              <div className="min-w-0">
+                <p className="text-xs font-bold text-amber-200 truncate">¡Regalo Diario para Astronautas!</p>
+                <p className="text-[10px] text-slate-400 truncate">+150 Monedas y +5 Gemas gratis</p>
+              </div>
+            </div>
+            <button
+              onClick={() => {
+                if (!hasClaimedDaily) {
+                  sounds.playGem();
+                  onClaimDailyGift();
+                }
+              }}
+              disabled={hasClaimedDaily}
+              className={`px-2.5 sm:px-3 py-1 rounded-xl font-bold text-xs shadow-md transition-all active:scale-95 shrink-0 ${
+                hasClaimedDaily
+                  ? 'bg-slate-800 text-slate-500 cursor-not-allowed'
+                  : 'bg-amber-400 hover:bg-amber-300 text-slate-950 animate-pulse'
+              }`}
+            >
+              {hasClaimedDaily ? 'Reclamado' : '¡Reclamar!'}
+            </button>
+          </div>
+        </div>
+
+        {/* Content Area with smooth scroll */}
+        <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 pb-8">
         {/* SHIPS TAB (with specific unlock requirements!) */}
         {activeTab === 'ships' && (
           <div className="grid grid-cols-1 gap-3">
@@ -581,6 +583,7 @@ export const ShopModal: React.FC<ShopModalProps> = ({
             </div>
           </div>
         )}
+        </div>
       </div>
     </div>
   );
