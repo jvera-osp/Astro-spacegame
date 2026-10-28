@@ -12,6 +12,7 @@ import {
   Check,
   Sparkles,
   HelpCircle,
+  GitBranch,
 } from 'lucide-react';
 import { sounds } from '../audio/soundEffects';
 
@@ -29,17 +30,30 @@ export const DownloadProjectModal: React.FC<DownloadProjectModalProps> = ({
 
   const files = [
     {
+      id: 'github-ready-zip',
+      name: 'astro-esquiva-github-ready.zip',
+      size: '520 KB',
+      badge: '🚀 GitHub CI/CD Nube',
+      badgeColor: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/40 ring-1 ring-indigo-400/30',
+      description:
+        'Proyecto completo con GitHub Actions (.github/workflows/) y scripts. Súbelo a GitHub y compila APK y AAB en la nube con un clic sin instalar nada en tu PC.',
+      href: '/descargas/astro-esquiva-github-ready.zip',
+      fallbackHref: '/astro-esquiva-github-ready.zip',
+      icon: <GitBranch className="w-6 h-6 text-indigo-400" />,
+      primary: true,
+    },
+    {
       id: 'android-zip',
       name: 'astro-esquiva-android-completo.zip',
       size: '479 KB',
-      badge: 'Recomendado',
+      badge: 'Android Studio',
       badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
       description:
         'Proyecto Android nativo pre-compilado con Capacitor y Gradle. NO requiere instalar Node.js ni NPM. Listo para abrir directamente en Android Studio.',
       href: '/descargas/astro-esquiva-android-completo.zip',
       fallbackHref: '/astro-esquiva-android-completo.zip',
       icon: <FileArchive className="w-6 h-6 text-emerald-400" />,
-      primary: true,
+      primary: false,
     },
     {
       id: 'web-dist-zip',

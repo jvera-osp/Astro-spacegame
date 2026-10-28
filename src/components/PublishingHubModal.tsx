@@ -14,6 +14,8 @@ import {
   RotateCcw,
   CheckCircle2,
   Terminal,
+  GitBranch,
+  Key,
 } from 'lucide-react';
 import { googlePlayBilling, GOOGLE_PLAY_PRODUCTS, GooglePlayProduct } from '../services/googlePlayBilling';
 import { sounds } from '../audio/soundEffects';
@@ -31,9 +33,10 @@ export const PublishingHubModal: React.FC<PublishingHubModalProps> = ({
   onTestPurchase,
   onRestorePurchases,
 }) => {
-  const [activeTab, setActiveTab] = useState<'billing' | 'packaging' | 'listing' | 'datasafety'>('billing');
+  const [activeTab, setActiveTab] = useState<'billing' | 'packaging' | 'listing' | 'datasafety' | 'github'>('billing');
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [restoreMessage, setRestoreMessage] = useState<string | null>(null);
+  const [activeWorkflow, setActiveWorkflow] = useState<'deploy' | 'quick'>('deploy');
 
   const handleCopy = (text: string, id: string) => {
     navigator.clipboard.writeText(text);
@@ -177,6 +180,24 @@ export const PublishingHubModal: React.FC<PublishingHubModalProps> = ({
         >
           <ShieldCheck className="w-3.5 h-3.5" />
           <span>4. Familias & Seguridad de Datos</span>
+        </button>
+
+        <button
+          onClick={() => {
+            sounds.playButtonTap();
+            setActiveTab('github');
+          }}
+          className={`py-2 px-3.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 ${
+            activeTab === 'github'
+              ? 'bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white shadow-md shadow-indigo-500/25 ring-1 ring-white/20'
+              : 'bg-slate-800/80 text-slate-400 hover:text-white'
+          }`}
+        >
+          <GitBranch className="w-3.5 h-3.5 text-indigo-400" />
+          <span>5. 🚀 Pipeline GitHub CI/CD</span>
+          <span className="text-[10px] bg-indigo-500/30 text-indigo-200 border border-indigo-400/30 px-1.5 py-0.2 rounded-full font-extrabold ml-1">
+            Nube
+          </span>
         </button>
       </div>
 
@@ -710,6 +731,345 @@ Un emocionante y colorido juego arcade diseñado especialmente para niños, dond
                   <ExternalLink className="w-3.5 h-3.5" />
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 5: GITHUB ACTIONS CI/CD PIPELINE */}
+        {activeTab === 'github' && (
+          <div className="space-y-4 max-w-4xl mx-auto">
+            {/* Hero Banner */}
+            <div className="p-4 bg-gradient-to-r from-indigo-950/80 via-slate-900 to-purple-950/80 border border-indigo-500/40 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-lg shadow-indigo-950/50">
+              <div className="flex items-start gap-3">
+                <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white text-xl font-black shadow-md shrink-0">
+                  <GitBranch className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="font-bold text-base text-white">Pipeline de CI/CD en GitHub Actions</h3>
+                    <span className="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded-full font-bold">
+                      Cero Instalaciones en tu PC
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-300 mt-1 leading-relaxed">
+                    Todo se compila en los servidores de GitHub en la nube. No necesitas instalar Node.js, NPM, Java ni Android Studio. Con un solo clic o con cada push, GitHub genera tu APK y AAB y los sube directo a Google Play Store.
+                  </p>
+                </div>
+              </div>
+
+              <a
+                href="/docs/GITHUB_ACTIONS_PIPELINE.md"
+                download="GUIA_GITHUB_PIPELINE.md"
+                onClick={() => sounds.playCoin()}
+                className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-md active:scale-95 transition-all shrink-0"
+              >
+                <Download className="w-4 h-4" />
+                <span>Descargar Guía Pipeline</span>
+              </a>
+            </div>
+
+            {/* Step Roadmap */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div className="p-3.5 bg-slate-900/80 border border-slate-800 rounded-2xl flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center gap-2 text-indigo-400 font-bold text-xs mb-1">
+                    <span className="w-5 h-5 rounded-full bg-indigo-500/20 flex items-center justify-center text-[11px] font-black">1</span>
+                    <span>Sube a GitHub</span>
+                  </div>
+                  <p className="text-[11px] text-slate-400">
+                    Crea un repositorio en GitHub y sube estos archivos (incluyendo la carpeta <code className="text-indigo-300">.github/workflows</code>).
+                  </p>
+                </div>
+                <div className="mt-2 text-[10px] text-slate-500 font-mono">git push origin main</div>
+              </div>
+
+              <div className="p-3.5 bg-slate-900/80 border border-slate-800 rounded-2xl flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center gap-2 text-purple-400 font-bold text-xs mb-1">
+                    <span className="w-5 h-5 rounded-full bg-purple-500/20 flex items-center justify-center text-[11px] font-black">2</span>
+                    <span>Configura los Secrets</span>
+                  </div>
+                  <p className="text-[11px] text-slate-400">
+                    En tu repo ve a <b>Settings ➡️ Secrets and variables ➡️ Actions</b> y agrega los 5 secrets con un clic abajo.
+                  </p>
+                </div>
+                <div className="mt-2 text-[10px] text-purple-400 font-semibold">5 Secrets seguros</div>
+              </div>
+
+              <div className="p-3.5 bg-slate-900/80 border border-slate-800 rounded-2xl flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center gap-2 text-emerald-400 font-bold text-xs mb-1">
+                    <span className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center text-[11px] font-black">3</span>
+                    <span>Pulsa "Run workflow"</span>
+                  </div>
+                  <p className="text-[11px] text-slate-400">
+                    Ve a la pestaña <b>Actions</b> y pulsa el botón. En 3 min descarga tu APK instalable o tu versión lista en Google Play.
+                  </p>
+                </div>
+                <div className="mt-2 text-[10px] text-emerald-400 font-semibold">100% en la nube</div>
+              </div>
+            </div>
+
+            {/* Interactive Secrets Copier */}
+            <div className="p-4 bg-slate-900/90 border border-slate-800 rounded-2xl space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Key className="w-4 h-4 text-amber-400" />
+                  <h3 className="font-bold text-sm text-white">Secrets Requeridos en GitHub Actions</h3>
+                </div>
+                <span className="text-[11px] text-slate-400">
+                  Settings ➡️ Secrets and variables ➡️ Actions
+                </span>
+              </div>
+
+              <div className="space-y-2 text-xs">
+                {/* Secret 1 */}
+                <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <code className="text-amber-300 font-bold">ANDROID_KEYSTORE_BASE64</code>
+                      <span className="text-[10px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded">Opcional / Auto</span>
+                    </div>
+                    <p className="text-[11px] text-slate-400 mt-0.5">
+                      Firma en Base64. Si no lo agregas, el workflow creará un keystore seguro automáticamente para que nunca falle la compilación.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => handleCopy('ANDROID_KEYSTORE_BASE64', 'secret-name-1')}
+                    className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono text-[11px] flex items-center gap-1 shrink-0 self-start sm:self-center"
+                  >
+                    {copiedId === 'secret-name-1' ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                    <span>Copiar Nombre</span>
+                  </button>
+                </div>
+
+                {/* Secret 2 */}
+                <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <code className="text-amber-300 font-bold">ANDROID_KEYSTORE_PASSWORD</code>
+                      <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 rounded">Predefinido</span>
+                    </div>
+                    <p className="text-[11px] text-slate-400 mt-0.5">
+                      Contraseña del keystore. Valor sugerido: <code className="text-emerald-300 font-bold">AstroEsquiva2026!</code>
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-1.5 shrink-0 self-start sm:self-center">
+                    <button
+                      onClick={() => handleCopy('ANDROID_KEYSTORE_PASSWORD', 'secret-name-2')}
+                      className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono text-[11px] flex items-center gap-1"
+                    >
+                      {copiedId === 'secret-name-2' ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                      <span>Nombre</span>
+                    </button>
+                    <button
+                      onClick={() => handleCopy('AstroEsquiva2026!', 'secret-val-2')}
+                      className="px-2.5 py-1 rounded-lg bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 border border-emerald-500/30 text-[11px] font-bold flex items-center gap-1"
+                    >
+                      {copiedId === 'secret-val-2' ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                      <span>Copiar Valor</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Secret 3 */}
+                <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <code className="text-amber-300 font-bold">ANDROID_KEY_ALIAS</code>
+                      <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 rounded">Predefinido</span>
+                    </div>
+                    <p className="text-[11px] text-slate-400 mt-0.5">
+                      Alias de la clave. Valor sugerido: <code className="text-emerald-300 font-bold">astroesquiva</code>
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-1.5 shrink-0 self-start sm:self-center">
+                    <button
+                      onClick={() => handleCopy('ANDROID_KEY_ALIAS', 'secret-name-3')}
+                      className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono text-[11px] flex items-center gap-1"
+                    >
+                      {copiedId === 'secret-name-3' ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                      <span>Nombre</span>
+                    </button>
+                    <button
+                      onClick={() => handleCopy('astroesquiva', 'secret-val-3')}
+                      className="px-2.5 py-1 rounded-lg bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 border border-emerald-500/30 text-[11px] font-bold flex items-center gap-1"
+                    >
+                      {copiedId === 'secret-val-3' ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                      <span>Copiar Valor</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Secret 4 */}
+                <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <code className="text-amber-300 font-bold">ANDROID_KEY_PASSWORD</code>
+                      <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 rounded">Predefinido</span>
+                    </div>
+                    <p className="text-[11px] text-slate-400 mt-0.5">
+                      Contraseña individual de la clave: <code className="text-emerald-300 font-bold">AstroEsquiva2026!</code>
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-1.5 shrink-0 self-start sm:self-center">
+                    <button
+                      onClick={() => handleCopy('ANDROID_KEY_PASSWORD', 'secret-name-4')}
+                      className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono text-[11px] flex items-center gap-1"
+                    >
+                      {copiedId === 'secret-name-4' ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                      <span>Nombre</span>
+                    </button>
+                    <button
+                      onClick={() => handleCopy('AstroEsquiva2026!', 'secret-val-4')}
+                      className="px-2.5 py-1 rounded-lg bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 border border-emerald-500/30 text-[11px] font-bold flex items-center gap-1"
+                    >
+                      {copiedId === 'secret-val-4' ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                      <span>Copiar Valor</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Secret 5 */}
+                <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <code className="text-amber-300 font-bold">PLAY_STORE_JSON_KEY</code>
+                      <span className="text-[10px] bg-indigo-500/20 text-indigo-300 px-1.5 py-0.5 rounded">Google Cloud Service Account</span>
+                    </div>
+                    <p className="text-[11px] text-slate-400 mt-0.5">
+                      Contenido JSON de tu Cuenta de Servicio con permisos en Play Console para subir la app directamente.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => handleCopy('PLAY_STORE_JSON_KEY', 'secret-name-5')}
+                    className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono text-[11px] flex items-center gap-1 shrink-0 self-start sm:self-center"
+                  >
+                    {copiedId === 'secret-name-5' ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                    <span>Copiar Nombre</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Workflow Files Preview */}
+            <div className="p-4 bg-slate-900/90 border border-slate-800 rounded-2xl space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <Terminal className="w-4 h-4 text-cyan-400" />
+                  <h3 className="font-bold text-sm text-white">Archivos de Workflow Integrados</h3>
+                </div>
+
+                <div className="flex items-center gap-1.5 bg-slate-950 p-1 rounded-xl border border-slate-800">
+                  <button
+                    onClick={() => {
+                      sounds.playButtonTap();
+                      setActiveWorkflow('deploy');
+                    }}
+                    className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all ${
+                      activeWorkflow === 'deploy'
+                        ? 'bg-indigo-600 text-white'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    deploy-playstore.yml
+                  </button>
+                  <button
+                    onClick={() => {
+                      sounds.playButtonTap();
+                      setActiveWorkflow('quick');
+                    }}
+                    className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all ${
+                      activeWorkflow === 'quick'
+                        ? 'bg-indigo-600 text-white'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    build-apk-quick.yml
+                  </button>
+                </div>
+              </div>
+
+              {activeWorkflow === 'deploy' ? (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-xs text-slate-400">
+                    <span>Ruta: <code className="text-indigo-300 font-mono">.github/workflows/deploy-playstore.yml</code></span>
+                    <button
+                      onClick={() =>
+                        handleCopy(
+                          `# Ver .github/workflows/deploy-playstore.yml en el repositorio`,
+                          'workflow-deploy-copy'
+                        )
+                      }
+                      className="text-xs text-indigo-400 hover:text-indigo-300 font-bold flex items-center gap-1"
+                    >
+                      {copiedId === 'workflow-deploy-copy' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                      <span>Copiar Info</span>
+                    </button>
+                  </div>
+                  <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono text-[11px] text-slate-300 overflow-x-auto max-h-56">
+                    <pre className="text-slate-300 whitespace-pre">
+{`name: 🚀 Compilar y Publicar en Google Play Store
+on:
+  workflow_dispatch:
+    inputs:
+      track: { default: 'internal', options: ['internal', 'alpha', 'beta', 'production'] }
+  push:
+    tags: ['v*']
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4 (JDK 17)
+      - uses: actions/setup-node@v4 (Node 20)
+      - run: npm ci && npm run build && npx cap sync android
+      - run: Configura Keystore y Firma (.AAB y .APK)
+      - uses: actions/upload-artifact@v4 (Descarga directa de .AAB y .APK)
+      - uses: r0adkll/upload-google-play@v1 (Subida automática a Google Play)`}
+                    </pre>
+                  </div>
+                  <p className="text-[11px] text-emerald-400 flex items-center gap-1.5">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>Incluye fallback automático: si falta un secret, compila y firma de todas formas para que descargues el archivo.</span>
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-xs text-slate-400">
+                    <span>Ruta: <code className="text-cyan-300 font-mono">.github/workflows/build-apk-quick.yml</code></span>
+                    <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded font-bold">
+                      Cero Configuración Requerida
+                    </span>
+                  </div>
+                  <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono text-[11px] text-slate-300 overflow-x-auto max-h-56">
+                    <pre className="text-slate-300 whitespace-pre">
+{`name: ⚡ Compilación Rápida APK y AAB (Sin Configurar Nada)
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4 (JDK 17)
+      - uses: actions/setup-node@v4 (Node 20)
+      - run: npm ci && npm run build && npx cap sync android
+      - run: Genera clave de firma automática
+      - run: Compila ./gradlew assembleRelease y bundleRelease
+      - uses: actions/upload-artifact@v4 (Guarda astro-esquiva-celular-APK y AAB)`}
+                    </pre>
+                  </div>
+                  <p className="text-[11px] text-cyan-300 flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>Ideal si solo quieres descargar el APK en tu celular ahora mismo sin configurar Google Play.</span>
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         )}

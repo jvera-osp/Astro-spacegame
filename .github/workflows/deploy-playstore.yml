@@ -1,0 +1,175 @@
+name: 🚀 Compilar y Publicar en Google Play Store
+
+on:
+  workflow_dispatch:
+    inputs:
+      track:
+        description: 'Canal de Google Play Store'
+        required: true
+        default: 'internal'
+        type: choice
+        options:
+          - internal
+          - alpha
+          - beta
+          - production
+      status:
+        description: 'Estado de la versión en Play Store'
+        required: true
+        default: 'completed'
+        type: choice
+        options:
+          - completed
+          - draft
+          - inProgress
+          - halted
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-and-deploy:
+    name: 📦 Compilar AAB y Desplegar a Google Play
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Clonar repositorio
+        uses: actions/checkout@v4
+
+      - name: ☕ Configurar JDK 17 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
+
+      - name: 🟢 Configurar Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: 📦 Instalar dependencias npm
+        run: |
+          npm ci || npm install
+
+      - name: 🔨 Compilar aplicación web (Vite)
+        run: |
+          npm run build
+
+      - name: 🔄 Sincronizar con Capacitor Android
+        run: |
+          npx cap sync android
+
+      - name: 🔑 Configurar Android Keystore de Producción
+        id: setup-keystore
+        run: |
+          mkdir -p android/keystores
+          if [ -n "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" ]; then
+            echo "Descifrando keystore desde GitHub Secret..."
+            echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android/keystores/release.keystore
+            echo "keystore_path=android/keystores/release.keystore" >> $GITHUB_OUTPUT
+            echo "keystore_alias=${{ secrets.ANDROID_KEY_ALIAS || 'astroesquiva' }}" >> $GITHUB_OUTPUT
+            echo "keystore_pass=${{ secrets.ANDROID_KEYSTORE_PASSWORD || 'AstroEsquiva2026!' }}" >> $GITHUB_OUTPUT
+            echo "key_pass=${{ secrets.ANDROID_KEY_PASSWORD || 'AstroEsquiva2026!' }}" >> $GITHUB_OUTPUT
+          else
+            echo "⚠️ Secret ANDROID_KEYSTORE_BASE64 no encontrado. Generando keystore temporal seguro para compilar..."
+            keytool -genkey -v -keystore android/keystores/release.keystore \
+              -alias astroesquiva -keyalg RSA -keysize 2048 -validity 10000 \
+              -storepass "AstroEsquiva2026!" -keypass "AstroEsquiva2026!" \
+              -dname "CN=Astro Esquiva, OU=Games, O=AstroEsquiva, L=Madrid, ST=Madrid, C=ES"
+            echo "keystore_path=android/keystores/release.keystore" >> $GITHUB_OUTPUT
+            echo "keystore_alias=astroesquiva" >> $GITHUB_OUTPUT
+            echo "keystore_pass=AstroEsquiva2026!" >> $GITHUB_OUTPUT
+            echo "key_pass=AstroEsquiva2026!" >> $GITHUB_OUTPUT
+            
+            # Exportar Base64 para que el usuario pueda copiarlo
+            KEYSTORE_B64=$(base64 -w 0 android/keystores/release.keystore)
+            echo "::notice title=Keystore Generado::Guarda este Base64 en tu Secret ANDROID_KEYSTORE_BASE64 si deseas conservar esta firma:"
+            echo "::notice::$KEYSTORE_B64"
+          fi
+
+      - name: 🛡️ Dar permisos de ejecución a Gradle Wrapper
+        run: |
+          chmod +x android/gradlew
+
+      - name: 📦 Compilar Android App Bundle (.AAB)
+        working-directory: android
+        run: |
+          ./gradlew bundleRelease --stacktrace
+
+      - name: 📱 Compilar Android APK (.APK)
+        working-directory: android
+        run: |
+          ./gradlew assembleRelease --stacktrace
+
+      - name: ✍️ Firmar Android App Bundle (.AAB) con apksigner / jarsigner
+        run: |
+          KEYSTORE_PATH="${{ steps.setup-keystore.outputs.keystore_path }}"
+          KEYSTORE_ALIAS="${{ steps.setup-keystore.outputs.keystore_alias }}"
+          KEYSTORE_PASS="${{ steps.setup-keystore.outputs.keystore_pass }}"
+          KEY_PASS="${{ steps.setup-keystore.outputs.key_pass }}"
+          
+          AAB_FILE=$(find android/app/build/outputs/bundle/release -name "*.aab" | head -n 1)
+          echo "Firmando AAB: $AAB_FILE con alias $KEYSTORE_ALIAS..."
+          jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 \
+            -keystore "$KEYSTORE_PATH" \
+            -storepass "$KEYSTORE_PASS" \
+            -keypass "$KEY_PASS" \
+            "$AAB_FILE" "$KEYSTORE_ALIAS"
+          
+          # Verificar firma
+          jarsigner -verify -verbose -certs "$AAB_FILE"
+          cp "$AAB_FILE" android/app/build/outputs/bundle/release/astro-esquiva-signed.aab
+
+      - name: ✍️ Firmar APK de Pruebas
+        run: |
+          KEYSTORE_PATH="${{ steps.setup-keystore.outputs.keystore_path }}"
+          KEYSTORE_ALIAS="${{ steps.setup-keystore.outputs.keystore_alias }}"
+          KEYSTORE_PASS="${{ steps.setup-keystore.outputs.keystore_pass }}"
+          KEY_PASS="${{ steps.setup-keystore.outputs.key_pass }}"
+          
+          APK_FILE=$(find android/app/build/outputs/apk/release -name "*.apk" | head -n 1)
+          if [ -n "$APK_FILE" ]; then
+            echo "Firmando APK: $APK_FILE..."
+            jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 \
+              -keystore "$KEYSTORE_PATH" \
+              -storepass "$KEYSTORE_PASS" \
+              -keypass "$KEY_PASS" \
+              "$APK_FILE" "$KEYSTORE_ALIAS"
+            cp "$APK_FILE" android/app/build/outputs/apk/release/astro-esquiva-signed.apk
+          fi
+
+      - name: 📤 Guardar AAB firmado como Artefacto descargable
+        uses: actions/upload-artifact@v4
+        with:
+          name: astro-esquiva-playstore-aab
+          path: android/app/build/outputs/bundle/release/astro-esquiva-signed.aab
+          retention-days: 90
+
+      - name: 📤 Guardar APK firmado como Artefacto descargable
+        uses: actions/upload-artifact@v4
+        with:
+          name: astro-esquiva-instalable-apk
+          path: android/app/build/outputs/apk/release/astro-esquiva-signed.apk
+          retention-days: 90
+
+      - name: 🚀 Publicar en Google Play Store
+        if: env.HAS_PLAY_SECRET == 'true'
+        env:
+          HAS_PLAY_SECRET: ${{ secrets.PLAY_STORE_JSON_KEY != '' }}
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_STORE_JSON_KEY }}
+          packageName: com.astroesquiva.spacegame
+          releaseFiles: android/app/build/outputs/bundle/release/astro-esquiva-signed.aab
+          track: ${{ github.event.inputs.track || 'internal' }}
+          status: ${{ github.event.inputs.status || 'completed' }}
+          whatsNewDirectory: docs/playstore/whatsnew
+
+      - name: ℹ️ Notificar si faltó el Secret de Google Play
+        if: env.HAS_PLAY_SECRET != 'true'
+        env:
+          HAS_PLAY_SECRET: ${{ secrets.PLAY_STORE_JSON_KEY != '' }}
+        run: |
+          echo "::warning title=Google Play Secret no configurado::Los artefactos .AAB y .APK fueron compilados y firmados exitosamente, pero no se subieron automáticamente a Google Play porque no has configurado el secret PLAY_STORE_JSON_KEY. Puedes descargar el archivo .AAB directamente de la sección 'Artifacts' de esta ejecución y subirlo manualmente a Google Play Console."
