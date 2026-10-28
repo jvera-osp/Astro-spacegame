@@ -1,4 +1,6 @@
 # 🚀 Pipeline de Despliegue Continuo con GitHub Actions & Google Play Store
+**Cuenta / Correo de Publicación y Soporte:** `comasterclips@gmail.com`  
+**Paquete Android:** `com.astroesquiva.spacegame`
 
 Esta guía te permite **compilar y publicar la app "Astro Esquiva" en Google Play Store sin instalar Node.js, Java, Android Studio ni ninguna herramienta en tu computadora**. Todo el proceso se ejecuta automáticamente en los servidores de GitHub en la nube.
 

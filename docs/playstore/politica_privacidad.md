@@ -72,5 +72,5 @@ Nos reservamos el derecho de actualizar esta política de privacidad en el futur
 
 Si tienes preguntas, dudas o inquietudes sobre esta política de privacidad o sobre la experiencia de tus hijos en el juego, puedes contactar al equipo de soporte en:
 
-- **Correo electrónico de soporte**: `soporte@astroesquiva.space` o a través de la ficha de contacto del desarrollador en Google Play Store.
-- **Sitio web del proyecto**: `https://astroesquiva.space`
+- **Correo electrónico oficial de soporte y privacidad**: `comasterclips@gmail.com`
+- **Ficha del desarrollador**: Astro Esquiva en Google Play Store

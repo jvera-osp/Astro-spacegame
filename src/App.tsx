@@ -16,8 +16,6 @@ import { SettingsModal } from './components/SettingsModal';
 import { GooglePlayIapModal } from './components/GooglePlayIapModal';
 import { LeaderboardModal } from './components/LeaderboardModal';
 import { PrivacyPolicyModal } from './components/PrivacyPolicyModal';
-import { PublishingHubModal } from './components/PublishingHubModal';
-import { DownloadProjectModal } from './components/DownloadProjectModal';
 import { googlePlayBilling, GooglePlayProduct } from './services/googlePlayBilling';
 import {
   GameState,
@@ -42,29 +40,7 @@ export default function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false);
   const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
-  const [isPublishingHubOpen, setIsPublishingHubOpen] = useState(false);
-  const [isDownloadsOpen, setIsDownloadsOpen] = useState(false);
   const [selectedIapProduct, setSelectedIapProduct] = useState<IapProduct | GooglePlayProduct | null>(null);
-
-  // Developer Mode toggle:
-  // In development, enabled by default so developer can view guides and test billing sandbox.
-  // In production builds (import.meta.env.PROD), it is HIDDEN by default so players never see dev tools.
-  // Can be unlocked anytime by tapping version 5 times in Settings (standard Android Easter Egg).
-  const [isDevMode, setIsDevMode] = useState<boolean>(() => {
-    const saved = localStorage.getItem('astro_dev_mode');
-    if (saved !== null) {
-      return saved === 'true';
-    }
-    return !import.meta.env.PROD;
-  });
-
-  const handleToggleDevMode = () => {
-    setIsDevMode((prev) => {
-      const next = !prev;
-      localStorage.setItem('astro_dev_mode', String(next));
-      return next;
-    });
-  };
 
   // Player persistent bank & customization
   const [coins, setCoins] = useState<number>(() => {
@@ -484,9 +460,7 @@ export default function App() {
 
   // Android bottom bar handlers
   const handleAndroidBack = () => {
-    if (isPublishingHubOpen) {
-      setIsPublishingHubOpen(false);
-    } else if (isPrivacyOpen) {
+    if (isPrivacyOpen) {
       setIsPrivacyOpen(false);
     } else if (isLeaderboardOpen) {
       setIsLeaderboardOpen(false);
@@ -502,8 +476,6 @@ export default function App() {
   };
 
   const handleAndroidHome = () => {
-    setIsDownloadsOpen(false);
-    setIsPublishingHubOpen(false);
     setIsPrivacyOpen(false);
     setIsLeaderboardOpen(false);
     setIsShopOpen(false);
@@ -515,7 +487,6 @@ export default function App() {
     <AndroidFrame
       onAndroidBack={handleAndroidBack}
       onAndroidHome={handleAndroidHome}
-      onOpenDownloads={() => setIsDownloadsOpen(true)}
       title="Astro Esquiva"
     >
       <div className="relative w-full h-full overflow-hidden bg-slate-950 flex flex-col">
@@ -569,7 +540,7 @@ export default function App() {
         )}
 
         {/* Title Screen View */}
-        {gameState === 'TITLE_MENU' && !isShopOpen && !isSettingsOpen && !isLeaderboardOpen && !isPrivacyOpen && !isPublishingHubOpen && !isDownloadsOpen && (
+        {gameState === 'TITLE_MENU' && !isShopOpen && !isSettingsOpen && !isLeaderboardOpen && !isPrivacyOpen && (
           <TitleScreen
             highScore={highScore}
             totalCoins={coins}
@@ -585,14 +556,11 @@ export default function App() {
             onOpenSettings={() => setIsSettingsOpen(true)}
             onOpenLeaderboard={() => setIsLeaderboardOpen(true)}
             onOpenPrivacy={() => setIsPrivacyOpen(true)}
-            onOpenPublishingHub={() => setIsPublishingHubOpen(true)}
-            onOpenDownloads={() => setIsDownloadsOpen(true)}
-            isDevMode={isDevMode}
           />
         )}
 
         {/* Pause Modal */}
-        {gameState === 'PAUSED' && !isShopOpen && !isSettingsOpen && !isLeaderboardOpen && !isPrivacyOpen && !isPublishingHubOpen && (
+        {gameState === 'PAUSED' && !isShopOpen && !isSettingsOpen && !isLeaderboardOpen && !isPrivacyOpen && (
           <PauseModal
             onResume={() => setGameState('PLAYING')}
             onRestart={() => {
@@ -609,7 +577,7 @@ export default function App() {
         )}
 
         {/* Game Over Modal */}
-        {gameState === 'GAME_OVER' && !isShopOpen && !isSettingsOpen && !isLeaderboardOpen && !isPrivacyOpen && !isPublishingHubOpen && (
+        {gameState === 'GAME_OVER' && !isShopOpen && !isSettingsOpen && !isLeaderboardOpen && !isPrivacyOpen && (
           <GameOverModal
             score={runScore}
             highScore={highScore}
@@ -651,9 +619,7 @@ export default function App() {
             onOpenIapModal={(prod) => setSelectedIapProduct(prod)}
             onClaimDailyGift={handleClaimDailyGift}
             hasClaimedDaily={hasClaimedDaily}
-            onOpenPublishingHub={() => setIsPublishingHubOpen(true)}
             onRestorePurchases={handleRestorePurchases}
-            isDevMode={isDevMode}
             onClose={() => setIsShopOpen(false)}
           />
         )}
@@ -667,10 +633,6 @@ export default function App() {
             onChangeDifficulty={setDifficulty}
             isMuted={isMuted}
             onToggleMute={handleToggleMute}
-            onAddTestCoins={() => {
-              setCoins((prev) => prev + 1000);
-              setGems((prev) => prev + 25);
-            }}
             onResetProgress={() => {
               setCoins(150);
               setGems(12);
@@ -685,13 +647,6 @@ export default function App() {
               localStorage.clear();
             }}
             onOpenPrivacy={() => setIsPrivacyOpen(true)}
-            onOpenPublishingHub={() => setIsPublishingHubOpen(true)}
-            onOpenDownloads={() => {
-              setIsSettingsOpen(false);
-              setIsDownloadsOpen(true);
-            }}
-            isDevMode={isDevMode}
-            onToggleDevMode={handleToggleDevMode}
             onClose={() => setIsSettingsOpen(false)}
           />
         )}
@@ -709,32 +664,6 @@ export default function App() {
         {/* Privacy Policy Modal */}
         {isPrivacyOpen && (
           <PrivacyPolicyModal onClose={() => setIsPrivacyOpen(false)} />
-        )}
-
-        {/* Google Play Publishing Hub & Billing Modal */}
-        {isPublishingHubOpen && (
-          <PublishingHubModal
-            onClose={() => setIsPublishingHubOpen(false)}
-            onOpenPrivacy={() => {
-              setIsPublishingHubOpen(false);
-              setIsPrivacyOpen(true);
-            }}
-            onTestPurchase={(prod) => {
-              setSelectedIapProduct(prod);
-            }}
-            onRestorePurchases={handleRestorePurchases}
-          />
-        )}
-
-        {/* Download Pre-Compiled Files Modal */}
-        {isDownloadsOpen && (
-          <DownloadProjectModal
-            onClose={() => setIsDownloadsOpen(false)}
-            onOpenPublishingHub={() => {
-              setIsDownloadsOpen(false);
-              setIsPublishingHubOpen(true);
-            }}
-          />
         )}
 
         {/* Google Play Simulated In-App Purchase Modal */}

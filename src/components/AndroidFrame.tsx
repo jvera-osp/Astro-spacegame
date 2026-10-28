@@ -5,7 +5,6 @@ interface AndroidFrameProps {
   children: React.ReactNode;
   onAndroidBack?: () => void;
   onAndroidHome?: () => void;
-  onOpenDownloads?: () => void;
   title?: string;
 }
 
@@ -13,7 +12,6 @@ export const AndroidFrame: React.FC<AndroidFrameProps> = ({
   children,
   onAndroidBack,
   onAndroidHome,
-  onOpenDownloads,
 }) => {
   const [currentTime, setCurrentTime] = useState('10:28');
   const [isFrameMode, setIsFrameMode] = useState<boolean>(() => {
@@ -38,18 +36,8 @@ export const AndroidFrame: React.FC<AndroidFrameProps> = ({
 
   return (
     <div className="relative w-full h-screen h-[100dvh] flex items-center justify-center bg-slate-950 overflow-hidden select-none">
-      {/* Top control bar on desktop for toggling Android Frame / Fullscreen / Downloads */}
+      {/* Top control bar on desktop for toggling Android Frame / Fullscreen */}
       <div className="absolute top-2 right-3 z-50 flex items-center gap-2 pointer-events-auto">
-        {onOpenDownloads && (
-          <button
-            onClick={onOpenDownloads}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 shadow-lg shadow-emerald-950/40 transition-all active:scale-95"
-            title="Descargar archivos pre-compilados (.ZIP)"
-          >
-            <Download className="w-3.5 h-3.5 text-slate-950" />
-            <span>Descargar ZIP</span>
-          </button>
-        )}
 
         <button
           onClick={() => setIsFrameMode((prev) => !prev)}

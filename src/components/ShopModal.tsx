@@ -25,9 +25,7 @@ interface ShopModalProps {
   onOpenIapModal: (product: IapProduct) => void;
   onClaimDailyGift: () => void;
   hasClaimedDaily: boolean;
-  onOpenPublishingHub: () => void;
   onRestorePurchases: () => void;
-  isDevMode?: boolean;
   onClose: () => void;
 }
 
@@ -52,9 +50,7 @@ export const ShopModal: React.FC<ShopModalProps> = ({
   onOpenIapModal,
   onClaimDailyGift,
   hasClaimedDaily,
-  onOpenPublishingHub,
   onRestorePurchases,
-  isDevMode = false,
   onClose,
 }) => {
   const [activeTab, setActiveTab] = useState<'ships' | 'consumables' | 'accessories' | 'iap'>('ships');
@@ -536,19 +532,8 @@ export const ShopModal: React.FC<ShopModalProps> = ({
                   }}
                   className="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-750 text-cyan-300 border border-slate-700 text-xs font-bold active:scale-95 transition-transform"
                 >
-                  Restaurar
+                  Restaurar Compras
                 </button>
-                {isDevMode && (
-                  <button
-                    onClick={() => {
-                      sounds.playButtonTap();
-                      onOpenPublishingHub();
-                    }}
-                    className="px-2.5 py-1.5 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/40 text-xs font-bold active:scale-95 transition-transform"
-                  >
-                    🚀 Publicar App
-                  </button>
-                )}
               </div>
             </div>
 
