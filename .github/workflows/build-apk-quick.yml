@@ -1,4 +1,4 @@
-name: ⚡ Compilación Rápida APK y AAB (Sin Configurar Nada)
+name: ⚡ Compilación de prueba APK y AAB
 
 on:
   push:
@@ -7,43 +7,72 @@ on:
       - master
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   build-apk:
-    name: 📱 Compilar APK y AAB descargables
+    name: 📱 Compilar artefactos de prueba
     runs-on: ubuntu-latest
+    env:
+      ANDROID_HOME: /opt/android-sdk
+      ANDROID_SDK_ROOT: /opt/android-sdk
 
     steps:
       - name: 📥 Clonar repositorio
         uses: actions/checkout@v4
 
-      - name: ☕ Configurar JDK 21 (Temurin)
+      - name: ☕ Configurar JDK 21
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
-          java-version: '21'
+          distribution: temurin
+          java-version: "21"
 
-      - name: 🟢 Configurar Node.js 22 (LTS)
+      - name: 🧰 Instalar Android SDK
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          sudo mkdir -p "$ANDROID_HOME"
+          sudo chown -R "$USER":"$USER" "$ANDROID_HOME"
+
+          if [ ! -x "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" ]; then
+            cd "$RUNNER_TEMP"
+            wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O cmdline-tools.zip
+            unzip -q cmdline-tools.zip -d cmdline-tools-unpacked
+            mkdir -p "$ANDROID_HOME/cmdline-tools"
+            mv cmdline-tools-unpacked/cmdline-tools "$ANDROID_HOME/cmdline-tools/latest"
+          fi
+
+          echo "$ANDROID_HOME/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
+          echo "$ANDROID_HOME/platform-tools" >> "$GITHUB_PATH"
+
+          set +e
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null
+          sdkmanager_status=${PIPESTATUS[1]}
+          set -e
+          if [ "$sdkmanager_status" -ne 0 ]; then
+            echo "::error::No se pudieron aceptar las licencias del Android SDK."
+            exit "$sdkmanager_status"
+          fi
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install "platform-tools" "platforms;android-36" "build-tools;36.0.0"
+
+      - name: 🟢 Configurar Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
-          cache: 'npm'
+          node-version: "22"
+          cache: "npm"
 
-      - name: 🔎 Verificar versión de Node
-        run: node -v && npm -v
+      - name: 📦 Instalar dependencias
+        run: npm ci --legacy-peer-deps
 
-      - name: 📦 Instalar dependencias npm
-        run: |
-          npm install --legacy-peer-deps
-
-      - name: 🔨 Compilar aplicación web (Vite)
-        run: |
-          npm run build
+      - name: 🔨 Compilar aplicación web
+        run: npm run build
 
       - name: 🔄 Sincronizar con Capacitor Android
-        run: |
-          npx cap sync android
+        run: npx cap sync android
 
-      - name: 🛠️ Verificar y Restaurar Gradle Wrapper si falta
+      - name: 🛠️ Restaurar Gradle Wrapper si falta
         run: |
           if [ ! -f "android/gradlew" ]; then
             echo "Gradle Wrapper no encontrado en android/. Restaurando desde template..."
@@ -51,78 +80,53 @@ jobs:
           fi
           chmod +x android/gradlew
 
-      - name: 🔑 Generar Keystore temporal de prueba
+      - name: 🔑 Generar clave temporal para pruebas
         run: |
           mkdir -p android/keystores
+          password="$(openssl rand -hex 32)"
+          echo "::add-mask::$password"
+          export ANDROID_KEYSTORE_PASSWORD="$password"
+          export ANDROID_KEY_PASSWORD="$password"
           keytool -genkey -v -keystore android/keystores/debug-release.keystore \
             -alias astrodebug -keyalg RSA -keysize 2048 -validity 10000 \
-            -storepass "AstroEsquivaDebug!" -keypass "AstroEsquivaDebug!" \
+            -storepass:env ANDROID_KEYSTORE_PASSWORD -keypass:env ANDROID_KEY_PASSWORD \
             -dname "CN=Astro Esquiva Tester, OU=Dev, O=AstroEsquiva, C=ES"
+          printf 'ANDROID_KEYSTORE_PASSWORD=%s\nANDROID_KEY_PASSWORD=%s\nANDROID_KEY_ALIAS=astrodebug\n' \
+            "$password" "$password" >> "$GITHUB_ENV"
 
       - name: 📱 Compilar APK (.APK)
         working-directory: android
-        env:
-          ANDROID_KEYSTORE_PASSWORD: AstroEsquivaDebug!
-          ANDROID_KEY_ALIAS: astrodebug
-          ANDROID_KEY_PASSWORD: AstroEsquivaDebug!
         run: |
           ./gradlew assembleRelease --stacktrace --no-daemon
 
       - name: 📦 Compilar AAB (.AAB)
         working-directory: android
-        env:
-          ANDROID_KEYSTORE_PASSWORD: AstroEsquivaDebug!
-          ANDROID_KEY_ALIAS: astrodebug
-          ANDROID_KEY_PASSWORD: AstroEsquivaDebug!
         run: |
           ./gradlew bundleRelease --stacktrace --no-daemon
 
-      - name: ✍️ Preparar y Verificar Archivos Finales
+      - name: ✍️ Verificar y preparar artefactos de prueba
         run: |
+          set -euo pipefail
           mkdir -p android/app/build/outputs/dist
+          APK_RAW="$(find android/app/build/outputs/apk/release -type f -name "*.apk" -print -quit)"
+          AAB_RAW="$(find android/app/build/outputs/bundle/release -type f -name "*.aab" -print -quit)"
+          test -n "$APK_RAW" || { echo "ERROR: No se encontró APK"; exit 1; }
+          test -n "$AAB_RAW" || { echo "ERROR: No se encontró AAB"; exit 1; }
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify "$APK_RAW"
+          jarsigner -verify "$AAB_RAW"
+          cp "$APK_RAW" android/app/build/outputs/dist/astro-esquiva-test.apk
+          cp "$AAB_RAW" android/app/build/outputs/dist/astro-esquiva-test.aab
 
-          APK_RAW=$(find android/app/build/outputs/apk/release -name "*.apk" | head -n 1)
-          if [ -n "$APK_RAW" ]; then
-            echo "APK generado: $APK_RAW"
-            if echo "$APK_RAW" | grep -q "unsigned"; then
-              jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 \
-                -keystore android/keystores/debug-release.keystore \
-                -storepass "AstroEsquivaDebug!" \
-                -keypass "AstroEsquivaDebug!" \
-                "$APK_RAW" astrodebug
-            fi
-            cp "$APK_RAW" android/app/build/outputs/dist/astro-esquiva-instalable.apk
-          else
-            echo "ERROR: No se encontró archivo APK en build/outputs/apk/release"
-            exit 1
-          fi
-
-          AAB_RAW=$(find android/app/build/outputs/bundle/release -name "*.aab" | head -n 1)
-          if [ -n "$AAB_RAW" ]; then
-            echo "AAB generado: $AAB_RAW"
-            if echo "$AAB_RAW" | grep -q "unsigned"; then
-              jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 \
-                -keystore android/keystores/debug-release.keystore \
-                -storepass "AstroEsquivaDebug!" \
-                -keypass "AstroEsquivaDebug!" \
-                "$AAB_RAW" astrodebug
-            fi
-            cp "$AAB_RAW" android/app/build/outputs/dist/astro-esquiva-googleplay.aab
-          else
-            echo "ERROR: No se encontró archivo AAB en build/outputs/bundle/release"
-            exit 1
-          fi
-
-      - name: 🚀 Subir APK a Descargas de GitHub (Artifacts)
+      - name: 🚀 Subir APK de prueba
         uses: actions/upload-artifact@v4
         with:
-          name: astro-esquiva-celular-APK
-          path: android/app/build/outputs/dist/astro-esquiva-instalable.apk
+          name: astro-esquiva-test-apk
+          path: android/app/build/outputs/dist/astro-esquiva-test.apk
           retention-days: 30
 
-      - name: 🚀 Subir AAB a Descargas de GitHub (Artifacts)
+      - name: 🚀 Subir AAB de prueba
         uses: actions/upload-artifact@v4
         with:
-          name: astro-esquiva-googleplay-AAB
-          path: android/app/build/outputs/dist/astro-esquiva-googleplay.aab
+          name: astro-esquiva-test-aab
+          path: android/app/build/outputs/dist/astro-esquiva-test.aab
           retention-days: 30

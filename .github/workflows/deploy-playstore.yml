@@ -1,182 +1,168 @@
-name: 🚀 Compilar y Publicar en Google Play Store
+name: 🚀 Release Android a Google Play
 
 on:
+  push:
+    tags:
+      - "v*"
   workflow_dispatch:
     inputs:
       track:
-        description: 'Canal de Google Play Store'
+        description: Canal de Google Play
         required: true
-        default: 'internal'
+        default: internal
         type: choice
         options:
           - internal
           - alpha
           - beta
           - production
-      status:
-        description: 'Estado de la versión en Play Store'
-        required: true
-        default: 'completed'
-        type: choice
-        options:
-          - completed
-          - draft
-          - inProgress
-          - halted
-  push:
-    tags:
-      - 'v*'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: play-store-release
+  cancel-in-progress: false
 
 jobs:
-  build-and-deploy:
-    name: 📦 Compilar AAB y Desplegar a Google Play
+  release:
+    name: 📦 Compilar, firmar y publicar
     runs-on: ubuntu-latest
+    env:
+      ANDROID_HOME: /opt/android-sdk
+      ANDROID_SDK_ROOT: /opt/android-sdk
 
     steps:
       - name: 📥 Clonar repositorio
         uses: actions/checkout@v4
 
-      - name: ☕ Configurar JDK 21 (Temurin)
+      - name: ☕ Configurar JDK 21
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
-          java-version: '21'
+          distribution: temurin
+          java-version: "21"
 
-      - name: 🟢 Configurar Node.js 20
+      - name: 🧰 Instalar Android SDK
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          sudo mkdir -p "$ANDROID_HOME"
+          sudo chown -R "$USER":"$USER" "$ANDROID_HOME"
+          if [ ! -x "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" ]; then
+            cd "$RUNNER_TEMP"
+            wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O cmdline-tools.zip
+            unzip -q cmdline-tools.zip -d cmdline-tools-unpacked
+            mkdir -p "$ANDROID_HOME/cmdline-tools"
+            mv cmdline-tools-unpacked/cmdline-tools "$ANDROID_HOME/cmdline-tools/latest"
+          fi
+
+          echo "$ANDROID_HOME/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
+          echo "$ANDROID_HOME/platform-tools" >> "$GITHUB_PATH"
+
+          set +e
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null
+          sdkmanager_status=${PIPESTATUS[1]}
+          set -e
+          if [ "$sdkmanager_status" -ne 0 ]; then
+            echo "::error::No se pudieron aceptar las licencias del Android SDK."
+            exit "$sdkmanager_status"
+          fi
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install "platform-tools" "platforms;android-36" "build-tools;36.0.0"
+
+      - name: 🟢 Configurar Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "22"
+          cache: npm
 
-      - name: 📦 Instalar dependencias npm
-        run: |
-          npm install --legacy-peer-deps
+      - name: 📦 Instalar dependencias
+        run: npm ci --legacy-peer-deps
 
-      - name: 🔨 Compilar aplicación web (Vite)
-        run: |
-          npm run build
+      - name: 🔨 Compilar aplicación web
+        run: npm run build
 
-      - name: 🔄 Sincronizar con Capacitor Android
-        run: |
-          npx cap sync android
+      - name: 🔄 Sincronizar Capacitor
+        run: npx cap sync android
 
-      - name: 🛠️ Verificar y Restaurar Gradle Wrapper si falta
-        run: |
-          if [ ! -f "android/gradlew" ]; then
-            echo "Gradle Wrapper no encontrado en android/. Restaurando desde template..."
-            tar -zxvf node_modules/@capacitor/cli/assets/android-template.tar.gz -C android gradlew gradlew.bat gradle/
-          fi
-          chmod +x android/gradlew
-
-      - name: 🔑 Configurar Android Keystore de Producción
-        id: setup-keystore
-        run: |
-          mkdir -p android/keystores
-          if [ -n "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" ]; then
-            echo "Descifrando keystore desde GitHub Secret ANDROID_KEYSTORE_BASE64..."
-            echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android/keystores/release.keystore
-            echo "keystore_path=android/keystores/release.keystore" >> $GITHUB_OUTPUT
-            echo "keystore_alias=${{ secrets.ANDROID_KEY_ALIAS || 'astroesquiva' }}" >> $GITHUB_OUTPUT
-            echo "keystore_pass=${{ secrets.ANDROID_KEYSTORE_PASSWORD || 'AstroEsquiva2026!' }}" >> $GITHUB_OUTPUT
-            echo "key_pass=${{ secrets.ANDROID_KEY_PASSWORD || 'AstroEsquiva2026!' }}" >> $GITHUB_OUTPUT
-          else
-            echo "⚠️ Secret ANDROID_KEYSTORE_BASE64 no configurado. Generando keystore seguro automático..."
-            keytool -genkey -v -keystore android/keystores/release.keystore \
-              -alias astroesquiva -keyalg RSA -keysize 2048 -validity 10000 \
-              -storepass "AstroEsquiva2026!" -keypass "AstroEsquiva2026!" \
-              -dname "CN=Astro Esquiva, OU=Games, O=AstroEsquiva, C=ES"
-            echo "keystore_path=android/keystores/release.keystore" >> $GITHUB_OUTPUT
-            echo "keystore_alias=astroesquiva" >> $GITHUB_OUTPUT
-            echo "keystore_pass=AstroEsquiva2026!" >> $GITHUB_OUTPUT
-            echo "key_pass=AstroEsquiva2026!" >> $GITHUB_OUTPUT
-
-            KEYSTORE_B64=$(base64 -w 0 android/keystores/release.keystore)
-            echo "::notice title=Keystore Generado::Guarda este Base64 en tu Secret ANDROID_KEYSTORE_BASE64 para mantener la misma firma:"
-            echo "::notice::$KEYSTORE_B64"
-          fi
-
-      - name: 📦 Compilar Android App Bundle (.AAB)
-        working-directory: android
+      - name: 🔐 Validar y preparar clave de carga
         env:
-          ANDROID_KEYSTORE_PASSWORD: ${{ steps.setup-keystore.outputs.keystore_pass }}
-          ANDROID_KEY_ALIAS: ${{ steps.setup-keystore.outputs.keystore_alias }}
-          ANDROID_KEY_PASSWORD: ${{ steps.setup-keystore.outputs.key_pass }}
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          PLAY_STORE_JSON_KEY: ${{ secrets.PLAY_STORE_JSON_KEY }}
+        shell: bash
         run: |
-          ./gradlew bundleRelease --stacktrace --no-daemon
-
-      - name: 📱 Compilar Android APK (.APK)
-        working-directory: android
-        env:
-          ANDROID_KEYSTORE_PASSWORD: ${{ steps.setup-keystore.outputs.keystore_pass }}
-          ANDROID_KEY_ALIAS: ${{ steps.setup-keystore.outputs.keystore_alias }}
-          ANDROID_KEY_PASSWORD: ${{ steps.setup-keystore.outputs.key_pass }}
-        run: |
-          ./gradlew assembleRelease --stacktrace --no-daemon
-
-      - name: ✍️ Preparar y Verificar Archivos Firmados
-        run: |
-          mkdir -p android/app/build/outputs/dist
-          KEYSTORE_PATH="${{ steps.setup-keystore.outputs.keystore_path }}"
-          KEYSTORE_ALIAS="${{ steps.setup-keystore.outputs.keystore_alias }}"
-          KEYSTORE_PASS="${{ steps.setup-keystore.outputs.keystore_pass }}"
-          KEY_PASS="${{ steps.setup-keystore.outputs.key_pass }}"
-
-          # Localizar AAB
-          AAB_RAW=$(find android/app/build/outputs/bundle/release -name "*.aab" | head -n 1)
-          if [ -n "$AAB_RAW" ]; then
-            echo "AAB encontrado: $AAB_RAW"
-            if echo "$AAB_RAW" | grep -q "unsigned"; then
-              jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 \
-                -keystore "$KEYSTORE_PATH" \
-                -storepass "$KEYSTORE_PASS" \
-                -keypass "$KEY_PASS" \
-                "$AAB_RAW" "$KEYSTORE_ALIAS"
-            fi
-            cp "$AAB_RAW" android/app/build/outputs/dist/astro-esquiva-signed.aab
-          else
-            echo "ERROR: No se encontró ningún archivo AAB generado."
+          set -euo pipefail
+          if [ -z "$ANDROID_KEYSTORE_BASE64" ] || [ -z "$ANDROID_KEYSTORE_PASSWORD" ] || [ -z "$ANDROID_KEY_ALIAS" ] || [ -z "$ANDROID_KEY_PASSWORD" ]; then
+            echo "::error::Configura los cuatro secrets ANDROID_KEYSTORE_* requeridos antes de ejecutar el release."
+            exit 1
+          fi
+          if [ -z "$PLAY_STORE_JSON_KEY" ]; then
+            echo "::error::Falta el secret PLAY_STORE_JSON_KEY. Es necesario para publicar automáticamente en Google Play."
             exit 1
           fi
 
-          # Localizar APK
-          APK_RAW=$(find android/app/build/outputs/apk/release -name "*.apk" | head -n 1)
-          if [ -n "$APK_RAW" ]; then
-            echo "APK encontrado: $APK_RAW"
-            if echo "$APK_RAW" | grep -q "unsigned"; then
-              jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 \
-                -keystore "$KEYSTORE_PATH" \
-                -storepass "$KEYSTORE_PASS" \
-                -keypass "$KEY_PASS" \
-                "$APK_RAW" "$KEYSTORE_ALIAS"
-            fi
-            cp "$APK_RAW" android/app/build/outputs/dist/astro-esquiva-signed.apk
+          mkdir -p android/keystores
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/keystores/release.keystore
+          chmod 600 android/keystores/release.keystore
+          if ! keytool -list -keystore android/keystores/release.keystore \
+            -storepass:env ANDROID_KEYSTORE_PASSWORD -alias "$ANDROID_KEY_ALIAS" >/dev/null 2>&1; then
+            echo "::error::El keystore, la contraseña o el alias no son válidos."
+            exit 1
           fi
 
-      - name: 📤 Guardar AAB firmado como Artefacto descargable
+      - name: 🧱 Compilar y firmar APK/AAB de release
+        working-directory: android
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          version_code=$((GITHUB_RUN_NUMBER * 1000 + GITHUB_RUN_ATTEMPT))
+          version_name="1.0.${GITHUB_RUN_NUMBER}"
+          if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then
+            if [[ "$GITHUB_REF_NAME" =~ ^v([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
+              version_name="${BASH_REMATCH[1]}"
+            else
+              echo "::error::Usa etiquetas de release con formato vMAJOR.MINOR.PATCH, por ejemplo v1.0.1."
+              exit 1
+            fi
+          fi
+          ./gradlew assembleRelease bundleRelease \
+            -PreleaseVersionCode="$version_code" \
+            -PreleaseVersionName="$version_name" \
+            --stacktrace --no-daemon
+
+      - name: ✅ Verificar y preparar artefactos firmados
+        shell: bash
+        run: |
+          set -euo pipefail
+          apk="android/app/build/outputs/apk/release/app-release.apk"
+          aab="android/app/build/outputs/bundle/release/app-release.aab"
+          test -f "$apk" || { echo "::error::No se generó el APK firmado."; exit 1; }
+          test -f "$aab" || { echo "::error::No se generó el AAB firmado."; exit 1; }
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify "$apk"
+          jarsigner -verify "$aab"
+          mkdir -p android/app/build/outputs/dist
+          cp "$apk" android/app/build/outputs/dist/astro-esquiva-release.apk
+          cp "$aab" android/app/build/outputs/dist/astro-esquiva-release.aab
+
+      - name: 📤 Guardar artefactos firmados
         uses: actions/upload-artifact@v4
         with:
-          name: astro-esquiva-playstore-aab
-          path: android/app/build/outputs/dist/astro-esquiva-signed.aab
+          name: astro-esquiva-release-${{ github.run_number }}-${{ github.run_attempt }}
+          path: |
+            android/app/build/outputs/dist/astro-esquiva-release.apk
+            android/app/build/outputs/dist/astro-esquiva-release.aab
           retention-days: 90
 
-      - name: 📤 Guardar APK firmado como Artefacto descargable
-        uses: actions/upload-artifact@v4
-        with:
-          name: astro-esquiva-instalable-apk
-          path: android/app/build/outputs/dist/astro-esquiva-signed.apk
-          retention-days: 90
-
-      - name: 🚀 Publicar en Google Play Store
-        if: ${{ secrets.PLAY_STORE_JSON_KEY != '' }}
+      - name: 🚀 Publicar en Google Play
         uses: r0adkll/upload-google-play@v1
         with:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_STORE_JSON_KEY }}
           packageName: com.astroesquiva.spacegame
-          releaseFiles: android/app/build/outputs/dist/astro-esquiva-signed.aab
-          track: ${{ github.event.inputs.track || 'internal' }}
-          status: ${{ github.event.inputs.status || 'completed' }}
-          whatsNewDirectory: docs/playstore/whatsnew
-
-      - name: ℹ️ Notificar si faltó el Secret de Google Play
-        if: ${{ secrets.PLAY_STORE_JSON_KEY == '' }}
-        run: |
-          echo "::warning title=Google Play Secret no configurado::Los artefactos .AAB y .APK fueron compilados y firmados exitosamente, pero no se subieron automáticamente a Google Play porque no has configurado el secret PLAY_STORE_JSON_KEY. Puedes descargar el archivo .AAB directamente de la sección 'Artifacts' de esta ejecución y subirlo manualmente a Google Play Console."
+          releaseFiles: android/app/build/outputs/dist/astro-esquiva-release.aab
+          track: ${{ inputs.track || 'internal' }}
+          status: completed
