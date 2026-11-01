@@ -331,7 +331,7 @@ class GooglePlayBillingService {
   public generateCatalogJson(): string {
     return JSON.stringify(
       {
-        version: '7.0.0',
+        version: '8.0.0',
         packageName: this.packageName,
         currency: 'USD',
         inAppProducts: GOOGLE_PLAY_PRODUCTS,

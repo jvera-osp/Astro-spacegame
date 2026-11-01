@@ -1,6 +1,6 @@
 {
   "appId": "com.astroesquiva.spacegame",
-  "billingApiVersion": "7.0.0",
+  "billingApiVersion": "8.0.0",
   "currency": "USD",
   "products": [
     {

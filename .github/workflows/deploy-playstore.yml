@@ -85,6 +85,9 @@ jobs:
       - name: 🔄 Sincronizar Capacitor
         run: npx cap sync android
 
+      - name: 🔧 Habilitar Gradle Wrapper
+        run: chmod +x android/gradlew
+
       - name: 🔐 Validar y preparar clave de carga
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}

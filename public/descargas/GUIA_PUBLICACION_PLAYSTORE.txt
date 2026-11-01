@@ -40,4 +40,4 @@ PASO 3: CONFIGURAR LOS PAGOS EN GOOGLE PLAY CONSOLE
 6. ¡Todos los productos, precios y descripciones se importarán automáticamente!
 
 Cualquier duda, el juego ya cuenta con la librería oficial
-com.android.billingclient:billing:7.0.0 integrada en app/build.gradle.
+com.android.billingclient:billing:8.0.0 integrada en app/build.gradle.

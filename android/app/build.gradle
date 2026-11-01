@@ -64,7 +64,7 @@ dependencies {
     implementation project(':capacitor-cordova-android-plugins')
 
     // Official Google Play Billing Library
-    implementation 'com.android.billingclient:billing:7.0.0'
+    implementation 'com.android.billingclient:billing:8.0.0'
 }
 
 apply from: 'capacitor.build.gradle'
