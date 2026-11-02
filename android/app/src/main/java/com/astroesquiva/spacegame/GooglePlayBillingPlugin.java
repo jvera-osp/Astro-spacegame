@@ -17,8 +17,6 @@ import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
 
-import org.json.JSONException;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -93,29 +91,25 @@ public class GooglePlayBillingPlugin extends Plugin {
                     return;
                 }
 
-                try {
-                    JSArray availableProducts = new JSArray();
-                    for (ProductDetails details : detailsResult.getProductDetailsList()) {
-                        ProductDetails.OneTimePurchaseOfferDetails offer =
-                            details.getOneTimePurchaseOfferDetails();
-                        if (offer == null) continue;
+                JSArray availableProducts = new JSArray();
+                for (ProductDetails details : detailsResult.getProductDetailsList()) {
+                    ProductDetails.OneTimePurchaseOfferDetails offer =
+                        details.getOneTimePurchaseOfferDetails();
+                    if (offer == null) continue;
 
-                        JSObject item = new JSObject();
-                        item.put("productId", details.getProductId());
-                        item.put("title", details.getTitle());
-                        item.put("description", details.getDescription());
-                        item.put("formattedPrice", offer.getFormattedPrice());
-                        item.put("currencyCode", offer.getPriceCurrencyCode());
-                        item.put("priceAmountMicros", offer.getPriceAmountMicros());
-                        availableProducts.put(item);
-                    }
-
-                    JSObject response = new JSObject();
-                    response.put("products", availableProducts);
-                    call.resolve(response);
-                } catch (JSONException exception) {
-                    call.reject("No se pudo preparar la lista de productos de Google Play.", exception);
+                    JSObject item = new JSObject();
+                    item.put("productId", details.getProductId());
+                    item.put("title", details.getTitle());
+                    item.put("description", details.getDescription());
+                    item.put("formattedPrice", offer.getFormattedPrice());
+                    item.put("currencyCode", offer.getPriceCurrencyCode());
+                    item.put("priceAmountMicros", offer.getPriceAmountMicros());
+                    availableProducts.put(item);
                 }
+
+                JSObject response = new JSObject();
+                response.put("products", availableProducts);
+                call.resolve(response);
             });
         });
     }
@@ -255,31 +249,27 @@ public class GooglePlayBillingPlugin extends Plugin {
                     return;
                 }
 
-                try {
-                    JSArray ownedProductIds = new JSArray();
-                    JSArray activePurchases = new JSArray();
-                    for (Purchase purchase : purchases) {
-                        if (purchase.getPurchaseState() != Purchase.PurchaseState.PURCHASED) continue;
-                        for (String productId : purchase.getProducts()) {
-                            if (!CONSUMABLE_PRODUCTS.contains(productId)) {
-                                ownedProductIds.put(productId);
-                            }
-                            JSObject activePurchase = new JSObject();
-                            activePurchase.put("productId", productId);
-                            activePurchase.put("purchaseTime", purchase.getPurchaseTime());
-                            activePurchase.put("purchaseState", "PURCHASED");
-                            activePurchase.put("purchaseToken", purchase.getPurchaseToken());
-                            activePurchases.put(activePurchase);
+                JSArray ownedProductIds = new JSArray();
+                JSArray activePurchases = new JSArray();
+                for (Purchase purchase : purchases) {
+                    if (purchase.getPurchaseState() != Purchase.PurchaseState.PURCHASED) continue;
+                    for (String productId : purchase.getProducts()) {
+                        if (!CONSUMABLE_PRODUCTS.contains(productId)) {
+                            ownedProductIds.put(productId);
                         }
+                        JSObject activePurchase = new JSObject();
+                        activePurchase.put("productId", productId);
+                        activePurchase.put("purchaseTime", purchase.getPurchaseTime());
+                        activePurchase.put("purchaseState", "PURCHASED");
+                        activePurchase.put("purchaseToken", purchase.getPurchaseToken());
+                        activePurchases.put(activePurchase);
                     }
-
-                    JSObject response = new JSObject();
-                    response.put("productIds", ownedProductIds);
-                    response.put("purchases", activePurchases);
-                    call.resolve(response);
-                } catch (JSONException exception) {
-                    call.reject("No se pudo preparar el resultado de restauración.", exception);
                 }
+
+                JSObject response = new JSObject();
+                response.put("productIds", ownedProductIds);
+                response.put("purchases", activePurchases);
+                call.resolve(response);
             });
         });
     }
@@ -363,8 +353,6 @@ public class GooglePlayBillingPlugin extends Plugin {
             response.put("purchaseState", purchaseState);
             response.put("purchaseToken", purchase.getPurchaseToken());
             activePurchaseCall.resolve(response);
-        } catch (JSONException exception) {
-            activePurchaseCall.reject("No se pudo preparar el resultado de la compra.", exception);
         } finally {
             activePurchaseCall = null;
             activeProductId = null;
@@ -373,15 +361,11 @@ public class GooglePlayBillingPlugin extends Plugin {
 
     private void notifyPurchaseUpdated(Purchase purchase, String productId) {
         JSObject response = new JSObject();
-        try {
-            response.put("productId", productId);
-            response.put("purchaseTime", purchase.getPurchaseTime());
-            response.put("purchaseState", "PURCHASED");
-            response.put("purchaseToken", purchase.getPurchaseToken());
-            notifyListeners("purchaseUpdated", response);
-        } catch (JSONException exception) {
-            android.util.Log.e("GooglePlayBilling", "Could not dispatch purchase update.", exception);
-        }
+        response.put("productId", productId);
+        response.put("purchaseTime", purchase.getPurchaseTime());
+        response.put("purchaseState", "PURCHASED");
+        response.put("purchaseToken", purchase.getPurchaseToken());
+        notifyListeners("purchaseUpdated", response);
     }
 
     private void consumePurchase(PluginCall call, String purchaseToken) {
