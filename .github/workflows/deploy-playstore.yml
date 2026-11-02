@@ -16,6 +16,14 @@ on:
           - alpha
           - beta
           - production
+      release_status:
+        description: "Usa draft mientras la app siga en borrador; completed requiere que Google permita publicar el track"
+        required: true
+        default: draft
+        type: choice
+        options:
+          - draft
+          - completed
 
 permissions:
   contents: read
@@ -168,4 +176,4 @@ jobs:
           packageName: com.astroesquiva.spacegame
           releaseFiles: android/app/build/outputs/dist/astro-esquiva-release.aab
           tracks: ${{ inputs.track || 'internal' }}
-          status: completed
+          status: ${{ inputs.release_status || 'completed' }}
