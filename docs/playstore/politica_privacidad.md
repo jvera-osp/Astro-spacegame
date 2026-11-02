@@ -1,76 +1,38 @@
-# Política de Privacidad Oficial
-## Astro Esquiva: Aventura Espacial (`com.astroesquiva.spacegame`)
-*Última actualización: 20 de Octubre de 2026*
+# Política de privacidad
 
-Esta Política de Privacidad describe cómo se gestiona y protege la información en el videojuego móvil **Astro Esquiva: Aventura Espacial** (en adelante, "la Aplicación"), desarrollado y publicado para la plataforma Android a través de Google Play Store.
+**Aplicación:** Astro Esquiva: Aventura Espacial (`com.astroesquiva.spacegame`)
 
-La Aplicación está diseñada para un público general y familiar, con especial atención en la seguridad, bienestar y privacidad de los menores de edad, cumpliendo rigurosamente con la Ley de Protección de la Privacidad Infantil en Internet (**COPPA** - Children's Online Privacy Protection Act) y el Reglamento General de Protección de Datos (**GDPR** / **RGPD**).
+**Última actualización:** 1 de noviembre de 2026
+**Contacto de privacidad y soporte:** [comasterclips@gmail.com](mailto:comasterclips@gmail.com)
 
----
+Esta política describe el tratamiento de datos en la versión Android de Astro Esquiva. El responsable debe revisarla y actualizarla cuando cambien la aplicación, sus servicios o sus prácticas.
 
-## 1. Información que NO recopilamos (Protección Infantil Estricta)
+## Datos del juego
 
-Para garantizar un entorno 100% seguro para niños y familias:
+La aplicación no requiere crear una cuenta y no integra anuncios, analítica ni un servidor propio. El apodo que el jugador elija, la puntuación, el progreso, las monedas virtuales y las preferencias se guardan en el almacenamiento local de la aplicación. No se envían a servidores del desarrollador. Android puede aplicar sus propias funciones de copia de seguridad según la configuración del dispositivo.
 
-- **NO solicitamos ni recopilamos datos personales identificables (PII)**: No pedimos nombres reales, apellidos, correos electrónicos, números telefónicos, fecha de nacimiento exacta ni domicilios.
-- **NO solicitamos acceso a funciones sensibles del dispositivo**: La aplicación no accede a la cámara, micrófono, lista de contactos, almacenamiento personal ni mensajes de texto.
-- **NO recopilamos ubicación geográfica exacta**: No utilizamos GPS ni servicios de localización en segundo plano.
-- **NO utilizamos cookies de seguimiento entre sitios ni perfiles publicitarios comportamentales**.
+El apodo es texto libre: recomendamos no incluir nombres reales, datos de contacto ni otra información personal. El usuario o su tutor puede borrar el progreso desde los ajustes del juego o borrar los datos de Astro Esquiva en Android. Desinstalar la aplicación también elimina el almacenamiento local, salvo copias de seguridad administradas por Android.
 
----
+## Compras y Google Play
 
-## 2. Almacenamiento Local en el Dispositivo
+Las compras opcionales se procesan con Google Play Billing. Google gestiona el pago y los datos financieros de la cuenta; Astro Esquiva no recibe números de tarjetas ni credenciales de pago. La aplicación recibe de Google Play el producto y el estado de la compra para entregar el contenido. El componente Android usa el token de compra únicamente para completar la compra (confirmar o consumirla); Astro Esquiva no opera un servidor que almacene esos tokens ni los envía a un servicio propio.
 
-Todo el progreso del jugador (monedas cósmicas recolectadas, naves desbloqueadas, récord de puntuación máxima y configuraciones de audio) se almacena **exclusivamente de forma local en el dispositivo del usuario** mediante almacenamiento web local (`localStorage` / almacenamiento protegido de la app).
+Google puede tratar datos de compra, dispositivo y diagnóstico para operar sus servicios, prevenir fraude y cumplir sus obligaciones. Ese tratamiento se rige también por las políticas de privacidad de Google. Los adultos pueden gestionar la autenticación de compras en la configuración de Google Play.
 
-- Si el usuario desinstala la aplicación o borra los datos de la misma en los ajustes de Android, estos registros locales se restablecerán.
-- Ningún dato de juego se transmite ni se vende a servidores externos o intermediarios.
+## Permisos y comunicaciones
 
----
+La aplicación necesita acceso a Internet para comunicarse con Google Play Billing. No integra publicidad, analítica, chat, multijugador en línea ni servicios propios que recojan o sincronicen el progreso.
 
-## 3. Compras Integradas (Google Play In-App Billing) y Control Parental
+## Menores y familias
 
-La Aplicación ofrece opciones voluntarias de compra dentro de la app (monedas virtuales y aspectos cosméticos de naves espaciales):
+Astro Esquiva está dirigido a jugadores de 6 a 12 años y a sus familias. La aplicación presenta una comprobación para una persona adulta antes de abrir la compra de Google Play. Esta comprobación complementa, y no reemplaza, la autenticación y los controles parentales de Google Play.
 
-- **Procesamiento de Pagos Seguro**: Todas las transacciones monetarias son procesadas de manera directa y exclusiva por **Google Play Billing** (Google LLC). Los desarrolladores de la Aplicación **NUNCA** tienen acceso a los datos de tarjetas de crédito, cuentas bancarias ni credenciales financieras del usuario.
-- **Control Parental**: Recomendamos a padres, madres y tutores habilitar la autenticación obligatoria para compras en Google Play Store (mediante huella digital o contraseña de la cuenta de Google) para evitar transacciones no autorizadas por menores.
+Esta política describe las prácticas técnicas observadas en la aplicación; no constituye una certificación de cumplimiento legal o de las políticas de Google. El desarrollador debe revisar las declaraciones de público objetivo, clasificación, privacidad y seguridad de datos antes de enviar cambios a Google Play.
 
----
+## Conservación y solicitudes
 
-## 4. Publicidad y Enlaces Externos
+Los datos de juego permanecen en el dispositivo y pueden eliminarse como se describe arriba. Los registros de transacciones que Google conserva se gestionan bajo las políticas de Google Play. Para preguntas o solicitudes relacionadas con esta política, escribe a [comasterclips@gmail.com](mailto:comasterclips@gmail.com).
 
-- En caso de incluirse anuncios publicitarios en versiones gratuitas, estos provendrán exclusivamente de redes publicitarias certificadas por Google bajo el programa **Google Play Designed for Families**.
-- No se muestran anuncios con contenido inapropiado, violento o dirigido a adultos.
-- Los enlaces externos (como esta política de privacidad o créditos) están diseñados para no interrumpir la experiencia de juego de los menores.
+## Cambios
 
----
-
-## 5. Derechos del Usuario (Acceso, Rectificación y Supresión)
-
-Dado que no almacenamos datos personales en servidores en la nube:
-- El usuario o tutor legal tiene pleno control de los datos locales en cualquier momento.
-- Para eliminar todo registro de juego, basta con seleccionar la opción **"Restablecer Todo"** en el menú de Ajustes del juego, o bien dirigirse a los *Ajustes de Android > Aplicaciones > Astro Esquiva > Almacenamiento > Borrar datos*.
-
----
-
-## 6. Cumplimiento con Google Play Families Policy
-
-Declaramos formalmente ante Google Play que:
-1. La aplicación ha sido clasificada y etiquetada como apta para familias y niños.
-2. Los identificadores de publicidad cumplen con las directrices de Google para aplicaciones dirigidas a niños.
-3. Se respeta el consentimiento informado de padres y tutores.
-
----
-
-## 7. Cambios en esta Política de Privacidad
-
-Nos reservamos el derecho de actualizar esta política de privacidad en el futuro si se incorporan nuevas características o para adaptarnos a cambios regulatorios. Cualquier cambio entrará en vigor inmediatamente tras su publicación.
-
----
-
-## 8. Contacto y Soporte para Padres y Familias
-
-Si tienes preguntas, dudas o inquietudes sobre esta política de privacidad o sobre la experiencia de tus hijos en el juego, puedes contactar al equipo de soporte en:
-
-- **Correo electrónico oficial de soporte y privacidad**: `comasterclips@gmail.com`
-- **Ficha del desarrollador**: Astro Esquiva en Google Play Store
+Si la aplicación empieza a recopilar, compartir o sincronizar datos, integra anuncios o añade otros servicios, esta política y las declaraciones de Google Play se actualizarán antes de distribuir esa versión.

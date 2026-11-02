@@ -1,13 +1,20 @@
 import React, { useState } from 'react';
 import { IapProduct } from '../types/game';
-import { googlePlayBilling, GooglePlayProduct } from '../services/googlePlayBilling';
+import { googlePlayBilling, GooglePlayProduct, GooglePlayPurchase } from '../services/googlePlayBilling';
 import { sounds } from '../audio/soundEffects';
-import { CheckCircle2, ShieldCheck, X, Sparkles, CreditCard, AlertCircle, RefreshCw } from 'lucide-react';
+import { CheckCircle2, ShieldCheck, X, Sparkles, AlertCircle, RefreshCw } from 'lucide-react';
 
 interface GooglePlayIapModalProps {
   product: IapProduct | GooglePlayProduct | null;
   onClose: () => void;
-  onSuccess: (coins: number, gems: number, rewardType?: string, consumableType?: string, consumableQty?: number) => void;
+  onSuccess: (
+    coins: number,
+    gems: number,
+    rewardType: string | undefined,
+    consumableType: string | undefined,
+    consumableQty: number | undefined,
+    purchase: GooglePlayPurchase
+  ) => Promise<void>;
 }
 
 export const GooglePlayIapModal: React.FC<GooglePlayIapModalProps> = ({
@@ -21,8 +28,10 @@ export const GooglePlayIapModal: React.FC<GooglePlayIapModalProps> = ({
   const [showParentGate, setShowParentGate] = useState(true);
   const [parentGateError, setParentGateError] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [generatedOrderId, setGeneratedOrderId] = useState<string>('');
-  const [sandboxOutcome, setSandboxOutcome] = useState<'SUCCESS' | 'USER_CANCELED' | 'DECLINED'>('SUCCESS');
+  const [[numA, numB]] = useState(() => [
+    Math.floor(12 + Math.random() * 18),
+    Math.floor(12 + Math.random() * 18),
+  ]);
 
   if (!product) return null;
 
@@ -35,10 +44,7 @@ export const GooglePlayIapModal: React.FC<GooglePlayIapModalProps> = ({
   const consumableType = 'consumableType' in product ? product.consumableType : undefined;
   const consumableQty = 'consumableQty' in product ? product.consumableQty : undefined;
 
-  // Simple math challenge for kid safety
-  const numA = 4;
-  const numB = 5;
-  const expectedAnswer = numA + numB; // 9
+  const expectedAnswer = numA * numB;
 
   const handleVerifyParent = (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,10 +56,6 @@ export const GooglePlayIapModal: React.FC<GooglePlayIapModalProps> = ({
     }
   };
 
-  const handleQuickBypass = () => {
-    setShowParentGate(false);
-  };
-
   const handleConfirmPurchase = async () => {
     setIsProcessing(true);
     setErrorMessage(null);
@@ -61,34 +63,47 @@ export const GooglePlayIapModal: React.FC<GooglePlayIapModalProps> = ({
 
     try {
       // Execute through Google Play Billing Service
-      const result = await googlePlayBilling.launchPurchaseFlow(prodId, sandboxOutcome);
+      const result = await googlePlayBilling.launchPurchaseFlow(prodId);
 
       if (result.success && result.purchase) {
-        setGeneratedOrderId(result.purchase.orderId);
+        const purchase = result.purchase;
         setIsProcessing(false);
         setIsSuccess(true);
         sounds.playPurchaseSuccess();
 
-        setTimeout(() => {
-          onSuccess(coinsReward, gemsReward, rewardType, consumableType, consumableQty);
-          onClose();
-        }, 1800);
+        void (async () => {
+          try {
+            await onSuccess(coinsReward, gemsReward, rewardType, consumableType, consumableQty, purchase);
+            await googlePlayBilling.completePurchase(purchase);
+            setTimeout(onClose, 1800);
+          } catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
+            setIsSuccess(false);
+            setErrorMessage(`La compra se realizó, pero no se pudo completar su registro: ${message}`);
+            sounds.playHurt();
+          }
+        })();
       } else {
         setIsProcessing(false);
         if (result.error === 'USER_CANCELED') {
           setErrorMessage('Compra cancelada por el usuario en Google Play.');
         } else if (result.error === 'ITEM_ALREADY_OWNED') {
           setErrorMessage('Ya posees este artículo en tu cuenta de Google Play.');
-        } else if (result.error === 'PAYMENT_DECLINED') {
-          setErrorMessage('Tarjeta rechazada por Google Play (Simulación de error de pago).');
+        } else if (result.error === 'PURCHASE_PENDING') {
+          setErrorMessage('El pago está pendiente. Las recompensas se entregarán cuando Google Play confirme la compra.');
+        } else if (result.error === 'PRODUCT_NOT_AVAILABLE') {
+          setErrorMessage('Este producto no está disponible en Google Play todavía.');
+        } else if (result.error === 'BILLING_NOT_AVAILABLE') {
+          setErrorMessage('Las compras solo están disponibles en la versión Android instalada desde Google Play.');
         } else {
-          setErrorMessage('Error al procesar la compra con Google Play Billing.');
+          setErrorMessage(result.error || 'Google Play no pudo procesar la compra.');
         }
         sounds.playHurt();
       }
-    } catch {
+    } catch (error) {
       setIsProcessing(false);
-      setErrorMessage('Fallo en la comunicación con Google Play.');
+      const message = error instanceof Error ? error.message : String(error);
+      setErrorMessage(`Fallo en la comunicación con Google Play: ${message}`);
       sounds.playHurt();
     }
   };
@@ -126,22 +141,17 @@ export const GooglePlayIapModal: React.FC<GooglePlayIapModalProps> = ({
         {/* Modal Body */}
         <div className="p-5 flex flex-col gap-4">
           {isSuccess ? (
-            /* Purchase Success screen with real GPA order ID */
+            /* Purchase Success screen */
             <div className="py-6 flex flex-col items-center justify-center text-center gap-3 animate-in zoom-in-95 duration-200">
               <div className="w-16 h-16 rounded-full bg-emerald-500/20 border-2 border-emerald-400 flex items-center justify-center text-emerald-400 shadow-lg shadow-emerald-500/30">
                 <CheckCircle2 className="w-10 h-10 animate-bounce" />
               </div>
-              <h3 className="text-xl font-bold text-white">¡Pago Procesado con Éxito!</h3>
+              <h3 className="text-xl font-bold text-white">¡Compra confirmada!</h3>
               <p className="text-xs text-slate-400 max-w-xs">
-                Se han acreditado tus recompensas espaciales de forma inmediata.
+                Google Play confirmó el pago. Tus recompensas espaciales se añadieron.
               </p>
 
-              {/* Receipt details */}
               <div className="w-full bg-slate-950 p-3 rounded-2xl border border-slate-800 text-left space-y-1 mt-1">
-                <div className="flex justify-between text-[11px]">
-                  <span className="text-slate-400">Recibo Google Play:</span>
-                  <span className="text-cyan-300 font-mono font-bold text-[10px]">{generatedOrderId}</span>
-                </div>
                 <div className="flex justify-between text-[11px]">
                   <span className="text-slate-400">Artículo:</span>
                   <span className="text-white font-medium">{product.title}</span>
@@ -158,9 +168,9 @@ export const GooglePlayIapModal: React.FC<GooglePlayIapModalProps> = ({
               <div className="bg-amber-950/40 border border-amber-500/40 rounded-2xl p-3 flex items-start gap-2.5">
                 <ShieldCheck className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
                 <div className="text-xs">
-                  <p className="font-bold text-amber-300">Zona de Control Parental Obligatoria</p>
+                  <p className="font-bold text-amber-300">Confirmación para una persona adulta</p>
                   <p className="text-amber-200/80 mt-0.5 leading-relaxed">
-                    Exigido por la Política para Familias de Google Play. Un adulto debe confirmar la compra:
+                        Antes de continuar, un adulto debe resolver este reto. Google Play también mostrará su propio diálogo de compra:
                   </p>
                 </div>
               </div>
@@ -168,7 +178,7 @@ export const GooglePlayIapModal: React.FC<GooglePlayIapModalProps> = ({
               <form onSubmit={handleVerifyParent} className="flex flex-col gap-3">
                 <div className="p-3 bg-slate-950 rounded-2xl border border-slate-800 flex items-center justify-between">
                   <span className="font-bold text-base text-cyan-300">
-                    ¿Cuánto es {numA} + {numB}?
+                    ¿Cuánto es {numA} × {numB}?
                   </span>
                   <input
                     type="number"
@@ -187,22 +197,12 @@ export const GooglePlayIapModal: React.FC<GooglePlayIapModalProps> = ({
                   </p>
                 )}
 
-                <div className="flex items-center gap-2 pt-1">
-                  <button
-                    type="submit"
-                    className="flex-1 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-sm transition-transform active:scale-95 shadow-md"
-                  >
-                    Confirmar Adulto
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleQuickBypass}
-                    className="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold"
-                    title="Omitir para modo desarrollador"
-                  >
-                    Saltar Reto
-                  </button>
-                </div>
+                <button
+                  type="submit"
+                  className="w-full py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-sm transition-transform active:scale-95 shadow-md"
+                >
+                  Confirmar persona adulta
+                </button>
               </form>
             </div>
           ) : (
@@ -239,55 +239,10 @@ export const GooglePlayIapModal: React.FC<GooglePlayIapModalProps> = ({
                 </div>
               </div>
 
-              {/* Payment Method / Sandbox selector */}
               <div className="space-y-1.5">
-                <div className="p-3 bg-slate-950/80 rounded-xl border border-slate-800 flex items-center justify-between text-xs text-slate-300">
-                  <div className="flex items-center gap-2">
-                    <CreditCard className="w-4 h-4 text-cyan-400" />
-                    <span>Tarjeta de Prueba Google Play (Test Card)</span>
-                  </div>
-                  <span className="text-emerald-400 font-bold">Aprobada</span>
-                </div>
-
-                {/* Developer Simulation options */}
-                <div className="flex items-center justify-between text-[11px] text-slate-400 px-1">
-                  <span>Modo Simulación:</span>
-                  <div className="flex items-center gap-1">
-                    <button
-                      type="button"
-                      onClick={() => setSandboxOutcome('SUCCESS')}
-                      className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                        sandboxOutcome === 'SUCCESS'
-                          ? 'bg-emerald-500/30 text-emerald-300 border border-emerald-500/50'
-                          : 'bg-slate-800 text-slate-400'
-                      }`}
-                    >
-                      Aprobar
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setSandboxOutcome('DECLINED')}
-                      className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                        sandboxOutcome === 'DECLINED'
-                          ? 'bg-rose-500/30 text-rose-300 border border-rose-500/50'
-                          : 'bg-slate-800 text-slate-400'
-                      }`}
-                    >
-                      Rechazar
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setSandboxOutcome('USER_CANCELED')}
-                      className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                        sandboxOutcome === 'USER_CANCELED'
-                          ? 'bg-amber-500/30 text-amber-300 border border-amber-500/50'
-                          : 'bg-slate-800 text-slate-400'
-                      }`}
-                    >
-                      Cancelar
-                    </button>
-                  </div>
-                </div>
+                <p className="px-1 text-[11px] text-slate-400">
+                  El pago se completará en la pantalla segura de Google Play. El precio mostrado proviene de Google Play.
+                </p>
               </div>
 
               {errorMessage && (
@@ -311,7 +266,7 @@ export const GooglePlayIapModal: React.FC<GooglePlayIapModalProps> = ({
                 ) : (
                   <>
                     <Sparkles className="w-4 h-4" />
-                    <span>Comprar con 1 toque ({priceDisplay})</span>
+                    <span>Continuar con Google Play ({priceDisplay})</span>
                   </>
                 )}
               </button>

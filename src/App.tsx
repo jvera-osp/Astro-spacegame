@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { AndroidFrame } from './components/AndroidFrame';
 import { GameCanvas } from './components/GameCanvas';
 import { HUD } from './components/HUD';
@@ -16,7 +16,7 @@ import { SettingsModal } from './components/SettingsModal';
 import { GooglePlayIapModal } from './components/GooglePlayIapModal';
 import { LeaderboardModal } from './components/LeaderboardModal';
 import { PrivacyPolicyModal } from './components/PrivacyPolicyModal';
-import { googlePlayBilling, GooglePlayProduct } from './services/googlePlayBilling';
+import { googlePlayBilling, GooglePlayProduct, GooglePlayPurchase } from './services/googlePlayBilling';
 import {
   GameState,
   ControlType,
@@ -28,7 +28,7 @@ import {
   LeaderboardEntry,
   PlayerInventory,
 } from './types/game';
-import { INITIAL_SHIPS, INITIAL_ACCESSORIES, INITIAL_LEADERBOARD } from './data/storeCatalog';
+import { INITIAL_SHIPS, INITIAL_ACCESSORIES, INITIAL_LEADERBOARD, IAP_PRODUCTS } from './data/storeCatalog';
 import { sounds } from './audio/soundEffects';
 
 export default function App() {
@@ -41,6 +41,37 @@ export default function App() {
   const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false);
   const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
   const [selectedIapProduct, setSelectedIapProduct] = useState<IapProduct | GooglePlayProduct | null>(null);
+  const [iapProducts, setIapProducts] = useState<IapProduct[]>(IAP_PRODUCTS);
+  const [billingError, setBillingError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+
+    googlePlayBilling.init()
+      .then(() => {
+        if (!active) return;
+        setIapProducts(IAP_PRODUCTS.map((product) => {
+          const storeProduct = googlePlayBilling.getProduct(product.id);
+          const available = googlePlayBilling.isProductAvailable(product.id);
+          return {
+            ...product,
+            title: storeProduct?.title || product.title,
+            priceUsd: storeProduct?.price || 'No disponible',
+            available,
+          };
+        }));
+      })
+      .catch((error: unknown) => {
+        if (!active) return;
+        const message = error instanceof Error ? error.message : String(error);
+        setBillingError(`No se pudo consultar Google Play Billing: ${message}`);
+        setIapProducts(IAP_PRODUCTS.map((product) => ({ ...product, available: false })));
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   // Player persistent bank & customization
   const [coins, setCoins] = useState<number>(() => {
@@ -403,33 +434,51 @@ export default function App() {
     setHasClaimedDaily(true);
   };
 
-  const handleIapSuccess = (
+  const handleIapSuccess = useCallback(async (
     earnedCoins: number,
     earnedGems: number,
     rewardType?: string,
     consumableType?: string,
-    consumableQty?: number
+    consumableQty?: number,
+    purchase?: GooglePlayPurchase
   ) => {
+    if (purchase) {
+      const processedTokens: string[] = JSON.parse(
+        localStorage.getItem('astro_processed_purchase_tokens') || '[]'
+      );
+      if (processedTokens.includes(purchase.purchaseToken)) return;
+    }
+
     if (earnedCoins > 0) {
-      setCoins((prev) => prev + earnedCoins);
-      setLifetimeCoins((prev) => prev + earnedCoins);
+      const currentCoins = Number(localStorage.getItem('astro_coins') ?? coins);
+      const currentLifetimeCoins = Number(localStorage.getItem('astro_lifetime_coins') ?? lifetimeCoins);
+      const updatedCoins = currentCoins + earnedCoins;
+      const updatedLifetimeCoins = currentLifetimeCoins + earnedCoins;
+      setCoins(updatedCoins);
+      setLifetimeCoins(updatedLifetimeCoins);
+      localStorage.setItem('astro_coins', updatedCoins.toString());
+      localStorage.setItem('astro_lifetime_coins', updatedLifetimeCoins.toString());
     }
     if (earnedGems > 0) {
-      setGems((prev) => prev + earnedGems);
+      const updatedGems = Number(localStorage.getItem('astro_gems') ?? gems) + earnedGems;
+      setGems(updatedGems);
+      localStorage.setItem('astro_gems', updatedGems.toString());
     }
 
     // Handle consumables from Google Play Billing
     if (consumableType && consumableQty) {
-      setInventory((prev) => {
-        if (consumableType === 'extra_lives') {
-          return { ...prev, extraLivesStock: prev.extraLivesStock + consumableQty };
-        } else if (consumableType === 'starting_shields') {
-          return { ...prev, startingShieldsStock: prev.startingShieldsStock + consumableQty };
-        } else if (consumableType === 'mega_magnets') {
-          return { ...prev, megaMagnetStock: prev.megaMagnetStock + consumableQty };
-        }
-        return prev;
-      });
+      const updatedInventory: PlayerInventory = JSON.parse(
+        localStorage.getItem('astro_inventory') || JSON.stringify(inventory)
+      );
+      if (consumableType === 'extra_lives') {
+        updatedInventory.extraLivesStock += consumableQty;
+      } else if (consumableType === 'starting_shields') {
+        updatedInventory.startingShieldsStock += consumableQty;
+      } else if (consumableType === 'mega_magnets') {
+        updatedInventory.megaMagnetStock += consumableQty;
+      }
+      setInventory(updatedInventory);
+      localStorage.setItem('astro_inventory', JSON.stringify(updatedInventory));
     }
 
     // Handle VIP Pass entitlement
@@ -439,22 +488,122 @@ export default function App() {
         : selectedIapProduct.id
       : null;
     if (rewardType === 'vip_pass' || currentId === 'astro_vip_astronaut_pass') {
-      if (!unlockedShipIds.includes('ship_falcon')) {
-        setUnlockedShipIds((prev) => [...prev, 'ship_falcon']);
+      const currentShipIds: string[] = JSON.parse(
+        localStorage.getItem('astro_unlocked_ships') || JSON.stringify(unlockedShipIds)
+      );
+      if (!currentShipIds.includes('ship_falcon')) {
+        const updatedShipIds = [...currentShipIds, 'ship_falcon'];
+        setUnlockedShipIds(updatedShipIds);
+        localStorage.setItem('astro_unlocked_ships', JSON.stringify(updatedShipIds));
       }
     }
-  };
+    if (purchase) {
+      const processedTokens: string[] = JSON.parse(
+        localStorage.getItem('astro_processed_purchase_tokens') || '[]'
+      );
+      localStorage.setItem(
+        'astro_processed_purchase_tokens',
+        JSON.stringify([...new Set([...processedTokens, purchase.purchaseToken])])
+      );
+    }
+  }, [coins, gems, inventory, lifetimeCoins, selectedIapProduct, unlockedShipIds]);
+
+  const fulfillPurchase = useCallback(async (purchase: GooglePlayPurchase) => {
+    if (purchase.purchaseState !== 'PURCHASED') return;
+    const product = googlePlayBilling.getProduct(purchase.productId);
+    if (!product) {
+      throw new Error(`Producto de Google Play desconocido: ${purchase.productId}`);
+    }
+
+    await handleIapSuccess(
+      product.coins || 0,
+      product.gems || 0,
+      product.rewardType,
+      product.consumableType,
+      product.consumableQty,
+      purchase
+    );
+    await googlePlayBilling.completePurchase(purchase);
+  }, [handleIapSuccess]);
+
+  const fulfillPurchaseRef = useRef(fulfillPurchase);
+  useEffect(() => {
+    fulfillPurchaseRef.current = fulfillPurchase;
+  }, [fulfillPurchase]);
+
+  useEffect(() => {
+    let active = true;
+    let purchaseListener: { remove: () => Promise<void> } | null = null;
+
+    const recoverPurchases = async () => {
+      try {
+        purchaseListener = await googlePlayBilling.addPurchaseListener((purchase) => {
+          void fulfillPurchaseRef.current(purchase).catch((error: unknown) => {
+            if (!active) return;
+            const message = error instanceof Error ? error.message : String(error);
+            setBillingError(`No se pudo entregar la compra confirmada: ${message}`);
+          });
+        });
+        if (!active) {
+          await purchaseListener?.remove();
+          return;
+        }
+
+        await googlePlayBilling.init();
+        if (!active) return;
+
+        const restoreError = googlePlayBilling.getRestoreError();
+        if (restoreError) {
+          setBillingError(`No se pudieron consultar las compras anteriores: ${restoreError}`);
+        }
+
+        if (await googlePlayBilling.isVipUnlocked()) {
+          const currentShipIds: string[] = JSON.parse(
+            localStorage.getItem('astro_unlocked_ships') || '["ship_classic"]'
+          );
+          if (!currentShipIds.includes('ship_falcon')) {
+            const updatedShipIds = [...currentShipIds, 'ship_falcon'];
+            setUnlockedShipIds(updatedShipIds);
+            localStorage.setItem('astro_unlocked_ships', JSON.stringify(updatedShipIds));
+          }
+        }
+
+        for (const purchase of googlePlayBilling.getActivePurchases()) {
+          await fulfillPurchaseRef.current(purchase);
+        }
+      } catch (error) {
+        if (!active) return;
+        const message = error instanceof Error ? error.message : String(error);
+        setBillingError(`No se pudieron recuperar las compras: ${message}`);
+      }
+    };
+
+    void recoverPurchases();
+    return () => {
+      active = false;
+      void purchaseListener?.remove();
+    };
+  }, []);
 
   const handleRestorePurchases = async () => {
-    const result = await googlePlayBilling.restorePurchases();
-    if (result.restoredCount > 0) {
-      for (const prod of result.restoredProducts) {
-        if (prod.productId === 'astro_vip_astronaut_pass') {
-          if (!unlockedShipIds.includes('ship_falcon')) {
-            setUnlockedShipIds((prev) => [...prev, 'ship_falcon']);
+    try {
+      setBillingError(null);
+      const result = await googlePlayBilling.restorePurchases();
+      for (const purchase of googlePlayBilling.getActivePurchases()) {
+        await fulfillPurchase(purchase);
+      }
+      if (result.restoredCount > 0) {
+        for (const prod of result.restoredProducts) {
+          if (prod.productId === 'astro_vip_astronaut_pass') {
+            if (!unlockedShipIds.includes('ship_falcon')) {
+              setUnlockedShipIds((prev) => [...prev, 'ship_falcon']);
+            }
           }
         }
       }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      setBillingError(`No se pudieron restaurar las compras: ${message}`);
     }
   };
 
@@ -606,6 +755,8 @@ export default function App() {
             accessories={accessories}
             activeAccessoryId={activeAccessoryId}
             inventory={inventory}
+            iapProducts={iapProducts}
+            billingError={billingError}
             highScore={highScore}
             lifetimeDodges={lifetimeDodges}
             bestSingleDodges={bestSingleDodges}
@@ -666,7 +817,7 @@ export default function App() {
           <PrivacyPolicyModal onClose={() => setIsPrivacyOpen(false)} />
         )}
 
-        {/* Google Play Simulated In-App Purchase Modal */}
+        {/* Google Play In-App Purchase Modal */}
         {selectedIapProduct && (
           <GooglePlayIapModal
             product={selectedIapProduct}

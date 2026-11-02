@@ -1,11 +1,4 @@
-/**
- * Google Play Billing Integration Service for Astro Esquiva
- * Supports:
- * - Native Android Google Play Billing via Capacitor / BillingClient bridge
- * - Web / TWA Digital Goods API (window.getDigitalGoodsService)
- * - Safe Google Play Sandbox with realistic GPA order receipts & parental gate
- * - Exportable product catalogs for Google Play Console bulk upload
- */
+import { Capacitor, PluginListenerHandle, registerPlugin } from '@capacitor/core';
 
 export interface GooglePlayProduct {
   productId: string;
@@ -26,62 +19,47 @@ export interface GooglePlayProduct {
 }
 
 export interface GooglePlayPurchase {
-  orderId: string;
-  packageName: string;
   productId: string;
   purchaseTime: number;
-  purchaseState: 'PURCHASED' | 'PENDING' | 'CANCELED';
+  purchaseState: 'PURCHASED' | 'PENDING';
   purchaseToken: string;
-  acknowledged: boolean;
-  consumed?: boolean;
 }
 
-// Complete Google Play In-App Product Catalog
-export const GOOGLE_PLAY_PRODUCTS: GooglePlayProduct[] = [
-  {
-    productId: 'astro_lives_pack_3',
-    type: 'inapp',
-    title: 'Rescate Cósmico (+3 Vidas)',
-    description: 'Pack de 3 vidas extra para continuar tu viaje estelar al chocar.',
-    price: '$0.49',
-    priceMicros: 490000,
-    currency: 'USD',
-    isConsumable: true,
-    rewardType: 'consumable',
-    consumableType: 'extra_lives',
-    consumableQty: 3,
-    iconEmoji: '❤️',
-    badge: 'Popular Niños',
-  },
-  {
-    productId: 'astro_shields_pack_3',
-    type: 'inapp',
-    title: 'Burbuja de Escudo Temporal (+2)',
-    description: 'Genera escudos reforzados al iniciar tu vuelo para protegerte.',
-    price: '$0.49',
-    priceMicros: 490000,
-    currency: 'USD',
-    isConsumable: true,
-    rewardType: 'consumable',
-    consumableType: 'starting_shields',
-    consumableQty: 2,
-    iconEmoji: '🛡️',
-    badge: 'Protección',
-  },
-  {
-    productId: 'astro_magnet_pack_2',
-    type: 'inapp',
-    title: 'Súper Imán Estelar (+3 Usos)',
-    description: 'Atrae automáticamente monedas y gemas lejanas durante el juego.',
-    price: '$0.49',
-    priceMicros: 490000,
-    currency: 'USD',
-    isConsumable: true,
-    rewardType: 'consumable',
-    consumableType: 'mega_magnets',
-    consumableQty: 3,
-    iconEmoji: '🧲',
-  },
+interface NativeStoreProduct {
+  productId: string;
+  title: string;
+  description: string;
+  formattedPrice: string;
+  currencyCode: string;
+  priceAmountMicros: number;
+}
+
+interface NativePurchase {
+  productId: string;
+  purchaseTime: number;
+  purchaseState: 'PURCHASED' | 'PENDING';
+  purchaseToken: string;
+}
+
+interface NativeRestoreResult {
+  productIds: string[];
+  purchases: GooglePlayPurchase[];
+}
+
+interface NativeBillingPlugin {
+  getProducts(options: { productIds: string[] }): Promise<{ products: NativeStoreProduct[] }>;
+  purchase(options: { productId: string }): Promise<NativePurchase>;
+  completePurchase(options: { productId: string; purchaseToken: string }): Promise<void>;
+  restorePurchases(): Promise<NativeRestoreResult>;
+  addListener(
+    eventName: 'purchaseUpdated',
+    listener: (purchase: GooglePlayPurchase) => void
+  ): Promise<PluginListenerHandle>;
+}
+
+const NativeBilling = registerPlugin<NativeBillingPlugin>('GooglePlayBilling');
+
+const PRODUCTS: GooglePlayProduct[] = [
   {
     productId: 'iap_starter_pack',
     type: 'inapp',
@@ -125,7 +103,7 @@ export const GOOGLE_PLAY_PRODUCTS: GooglePlayProduct[] = [
     coins: 2500,
     gems: 45,
     iconEmoji: '💎',
-    badge: '⭐ Más Vendido',
+    badge: 'Más vendido',
   },
   {
     productId: 'iap_cosmic_vault',
@@ -140,201 +118,214 @@ export const GOOGLE_PLAY_PRODUCTS: GooglePlayProduct[] = [
     coins: 8000,
     gems: 150,
     iconEmoji: '🚀',
-    badge: 'Súper Valor',
+    badge: 'Súper valor',
   },
   {
     productId: 'astro_vip_astronaut_pass',
     type: 'inapp',
     title: 'Pase Astronauta VIP Permanente',
-    description: 'Desbloquea Halcón Dorado VIP, 2,000 monedas, 50 gemas y restaurar compras de por vida.',
+    description: 'Desbloquea el Halcón Dorado VIP y recompensas permanentes.',
     price: '$3.99',
     priceMicros: 3990000,
     currency: 'USD',
-    isConsumable: false, // Durable / Non-consumable with Restore Purchases!
+    isConsumable: false,
     rewardType: 'vip_pass',
     coins: 2000,
     gems: 50,
     iconEmoji: '👑',
-    badge: 'Durable Permanente',
+    badge: 'Permanente',
   },
 ];
 
 class GooglePlayBillingService {
-  private isInitialized = false;
-  private isNativeBillingAvailable = false;
-  private purchases: GooglePlayPurchase[] = [];
-  private packageName = 'com.astroesquiva.spacegame';
+  private initialized = false;
+  private initialization: Promise<void> | null = null;
+  private nativeAvailable = false;
+  private availableProductIds = new Set<string>();
+  private ownedProductIds = new Set<string>();
+  private activePurchases: GooglePlayPurchase[] = [];
+  private restoreError: string | null = null;
+  private completionPromises = new Map<string, Promise<void>>();
 
-  constructor() {
-    this.init();
+  public init(): Promise<void> {
+    if (this.initialized) return Promise.resolve();
+    if (this.initialization) return this.initialization;
+
+    this.initialization = this.initialize().catch((error: unknown) => {
+      this.initialization = null;
+      throw error;
+    });
+    return this.initialization;
   }
 
-  public async init(): Promise<void> {
-    if (this.isInitialized) return;
+  private async initialize(): Promise<void> {
+    this.nativeAvailable = Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'android';
+    if (!this.nativeAvailable) {
+      this.initialized = true;
+      return;
+    }
 
-    // Load past acknowledged purchases from storage
+    const { products } = await NativeBilling.getProducts({
+      productIds: PRODUCTS.map(({ productId }) => productId),
+    });
+
+    this.availableProductIds = new Set(products.map(({ productId }) => productId));
+    for (const storeProduct of products) {
+      const product = this.getProduct(storeProduct.productId);
+      if (!product) continue;
+      product.title = storeProduct.title || product.title;
+      product.description = storeProduct.description || product.description;
+      product.price = storeProduct.formattedPrice;
+      product.priceMicros = storeProduct.priceAmountMicros;
+      product.currency = storeProduct.currencyCode;
+    }
+
+    this.initialized = true;
     try {
-      const stored = localStorage.getItem('astro_gp_purchases');
-      if (stored) {
-        this.purchases = JSON.parse(stored);
-      }
-    } catch {
-      this.purchases = [];
+      const restored = await NativeBilling.restorePurchases();
+      this.applyRestoredPurchases(restored);
+    } catch (error) {
+      this.restoreError = error instanceof Error ? error.message : String(error);
     }
-
-    // Check if running on Android Capacitor or Digital Goods API
-    if (typeof window !== 'undefined') {
-      const isCapacitor = !!(window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor?.isNativePlatform?.();
-      const hasDigitalGoods = 'getDigitalGoodsService' in window;
-      this.isNativeBillingAvailable = isCapacitor || hasDigitalGoods;
-    }
-
-    this.isInitialized = true;
   }
 
   public getProducts(): GooglePlayProduct[] {
-    return GOOGLE_PLAY_PRODUCTS;
+    return PRODUCTS;
   }
 
   public getProduct(productId: string): GooglePlayProduct | undefined {
-    return GOOGLE_PLAY_PRODUCTS.find((p) => p.productId === productId);
+    return PRODUCTS.find((product) => product.productId === productId);
   }
 
   public isNativeSupported(): boolean {
-    return this.isNativeBillingAvailable;
+    return this.nativeAvailable;
   }
 
-  /**
-   * Launch purchase flow (either via Google Play native client or simulated sandbox)
-   */
+  public isProductAvailable(productId: string): boolean {
+    return this.availableProductIds.has(productId);
+  }
+
   public async launchPurchaseFlow(
-    productId: string,
-    simulatedOutcome: 'SUCCESS' | 'USER_CANCELED' | 'DECLINED' = 'SUCCESS'
+    productId: string
   ): Promise<{ success: boolean; purchase?: GooglePlayPurchase; error?: string }> {
     await this.init();
 
-    const product = this.getProduct(productId);
-    if (!product) {
-      return { success: false, error: 'PRODUCT_NOT_FOUND' };
+    if (!this.nativeAvailable) {
+      return { success: false, error: 'BILLING_NOT_AVAILABLE' };
     }
 
-    // If it's a non-consumable, check if already owned
-    if (!product.isConsumable && this.isProductOwned(productId)) {
+    const product = this.getProduct(productId);
+    if (!product || !this.isProductAvailable(productId)) {
+      return { success: false, error: 'PRODUCT_NOT_AVAILABLE' };
+    }
+
+    if (!product.isConsumable && this.ownedProductIds.has(productId)) {
       return { success: false, error: 'ITEM_ALREADY_OWNED' };
     }
 
-    if (simulatedOutcome === 'USER_CANCELED') {
-      return { success: false, error: 'USER_CANCELED' };
+    try {
+      const purchase = await NativeBilling.purchase({ productId });
+      if (purchase.purchaseState !== 'PURCHASED') {
+        return { success: false, error: 'PURCHASE_PENDING' };
+      }
+
+      if (!product.isConsumable) this.ownedProductIds.add(productId);
+      return { success: true, purchase };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      return { success: false, error: message };
     }
-
-    if (simulatedOutcome === 'DECLINED') {
-      return { success: false, error: 'PAYMENT_DECLINED' };
-    }
-
-    // Generate realistic Google Play Order ID & Purchase Token
-    const orderNum = Math.floor(1000 + Math.random() * 9000);
-    const orderSuffix = Math.floor(10000 + Math.random() * 90000);
-    const orderId = `GPA.${orderNum}-${orderSuffix}-${Math.floor(1000 + Math.random() * 9000)}-${Math.floor(10000 + Math.random() * 90000)}`;
-    const purchaseToken = 'play_tok_' + Math.random().toString(36).substring(2) + Date.now().toString(36);
-
-    const purchase: GooglePlayPurchase = {
-      orderId,
-      packageName: this.packageName,
-      productId,
-      purchaseTime: Date.now(),
-      purchaseState: 'PURCHASED',
-      purchaseToken,
-      acknowledged: false,
-      consumed: false,
-    };
-
-    // Acknowledge or consume
-    if (product.isConsumable) {
-      purchase.consumed = true;
-      purchase.acknowledged = true;
-    } else {
-      purchase.acknowledged = true;
-      this.purchases.push(purchase);
-      this.savePurchases();
-    }
-
-    return {
-      success: true,
-      purchase,
-    };
   }
 
-  public isProductOwned(productId: string): boolean {
-    return this.purchases.some(
-      (p) => p.productId === productId && p.purchaseState === 'PURCHASED' && p.acknowledged
+  public async isProductOwned(productId: string): Promise<boolean> {
+    await this.init();
+    return this.ownedProductIds.has(productId);
+  }
+
+  public async completePurchase(purchase: GooglePlayPurchase): Promise<void> {
+    const activeCompletion = this.completionPromises.get(purchase.purchaseToken);
+    if (activeCompletion) return activeCompletion;
+
+    const completion = this.completeNativePurchase(purchase);
+    this.completionPromises.set(purchase.purchaseToken, completion);
+    try {
+      await completion;
+    } finally {
+      this.completionPromises.delete(purchase.purchaseToken);
+    }
+  }
+
+  private async completeNativePurchase(purchase: GooglePlayPurchase): Promise<void> {
+    await this.init();
+    if (!this.nativeAvailable) {
+      throw new Error('Google Play Billing solo está disponible en Android.');
+    }
+
+    await NativeBilling.completePurchase({
+      productId: purchase.productId,
+      purchaseToken: purchase.purchaseToken,
+    });
+    this.activePurchases = this.activePurchases.filter(
+      (activePurchase) => activePurchase.purchaseToken !== purchase.purchaseToken
     );
   }
 
-  public isVipUnlocked(): boolean {
+  public async isVipUnlocked(): Promise<boolean> {
     return this.isProductOwned('astro_vip_astronaut_pass');
   }
 
-  /**
-   * Restore Purchases (mandated by Google Play Families & Billing policies)
-   */
   public async restorePurchases(): Promise<{ restoredCount: number; restoredProducts: GooglePlayProduct[] }> {
     await this.init();
-    const restoredProducts: GooglePlayProduct[] = [];
-
-    for (const purchase of this.purchases) {
-      if (purchase.acknowledged && purchase.purchaseState === 'PURCHASED') {
-        const prod = this.getProduct(purchase.productId);
-        if (prod && !restoredProducts.some((p) => p.productId === prod.productId)) {
-          restoredProducts.push(prod);
-        }
-      }
+    if (!this.nativeAvailable) {
+      throw new Error('Google Play Billing solo está disponible en Android.');
     }
 
-    return {
-      restoredCount: restoredProducts.length,
-      restoredProducts,
-    };
+    const restored = await NativeBilling.restorePurchases();
+    this.applyRestoredPurchases(restored);
+    this.restoreError = null;
+    const { productIds } = restored;
+    const restoredProducts = productIds
+      .map((productId) => this.getProduct(productId))
+      .filter((product): product is GooglePlayProduct => Boolean(product));
+
+    return { restoredCount: restoredProducts.length, restoredProducts };
   }
 
-  private savePurchases(): void {
-    try {
-      localStorage.setItem('astro_gp_purchases', JSON.stringify(this.purchases));
-    } catch {
-      // Ignore
-    }
+  public getActivePurchases(): GooglePlayPurchase[] {
+    return [...this.activePurchases];
   }
 
-  /**
-   * Export Google Play Console CSV template for Bulk In-App Products Upload
-   */
+  public getRestoreError(): string | null {
+    return this.restoreError;
+  }
+
+  public async addPurchaseListener(
+    listener: (purchase: GooglePlayPurchase) => void
+  ): Promise<PluginListenerHandle | null> {
+    if (!Capacitor.isNativePlatform() || Capacitor.getPlatform() !== 'android') return null;
+    return NativeBilling.addListener('purchaseUpdated', listener);
+  }
+
+  private applyRestoredPurchases(restored: NativeRestoreResult): void {
+    this.ownedProductIds = new Set(restored.productIds);
+    this.activePurchases = restored.purchases;
+  }
+
   public generateGooglePlayCsv(): string {
-    const headers = [
-      'Product ID',
-      'Published State',
-      'Purchase Type',
-      'Auto-Translate',
-      'Locale; Title; Description',
-      'Price',
-    ];
-
-    const rows = GOOGLE_PLAY_PRODUCTS.map((prod) => {
-      const localeTitleDesc = `es-ES; ${prod.title}; ${prod.description}`;
-      return `"${prod.productId}","published","managed_product","false","${localeTitleDesc}","${prod.priceMicros}"`;
+    const headers = ['Product ID', 'Published State', 'Purchase Type', 'Auto-Translate', 'Locale; Title; Description', 'Price'];
+    const rows = PRODUCTS.map((product) => {
+      const localeTitleDesc = `es-ES; ${product.title}; ${product.description}`;
+      return `"${product.productId}","unpublished","managed_product","false","${localeTitleDesc}","${product.priceMicros}"`;
     });
-
     return [headers.join(','), ...rows].join('\n');
   }
 
-  /**
-   * Export JSON Catalog for Android build & configuration
-   */
   public generateCatalogJson(): string {
     return JSON.stringify(
       {
         version: '8.0.0',
-        packageName: this.packageName,
-        currency: 'USD',
-        inAppProducts: GOOGLE_PLAY_PRODUCTS,
+        packageName: 'com.astroesquiva.spacegame',
+        products: PRODUCTS,
       },
       null,
       2
@@ -342,4 +333,5 @@ class GooglePlayBillingService {
   }
 }
 
+export const GOOGLE_PLAY_PRODUCTS = PRODUCTS;
 export const googlePlayBilling = new GooglePlayBillingService();

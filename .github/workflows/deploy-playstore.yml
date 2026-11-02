@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       track:
-        description: Canal de Google Play
+        description: "internal para pruebas internas, alpha para prueba cerrada, beta para prueba abierta"
         required: true
         default: internal
         type: choice
@@ -167,5 +167,5 @@ jobs:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_STORE_JSON_KEY }}
           packageName: com.astroesquiva.spacegame
           releaseFiles: android/app/build/outputs/dist/astro-esquiva-release.aab
-          track: ${{ inputs.track || 'internal' }}
+          tracks: ${{ inputs.track || 'internal' }}
           status: completed

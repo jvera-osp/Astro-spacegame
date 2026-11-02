@@ -10,12 +10,12 @@ Bienvenido a la carpeta de distribución para la tienda **Google Play Store**. A
 | Archivo | Descripción | Uso Principal |
 | :--- | :--- | :--- |
 | **`guia_publicacion_playstore.md`** | Manual detallado paso a paso con capturas y comandos | Creación de cuenta, firma digital, subida del `.aab` y revisión de Google |
-| **`google-play-catalog.csv`** | Catálogo oficial de compras integradas (IAP) | Importar directamente en Google Play Console > *Monetización > Productos integrados* |
-| **`google-play-catalog.json`** | Especificación técnica de los productos de facturación | Integración con SDKs de Google Play Billing / Backend |
+| **`google-play-catalog.csv`** | Borrador de catálogo de compras | Contrastar con la plantilla de importación vigente de Play Console antes de importar |
+| **`google-play-catalog.json`** | Especificación técnica de los cinco productos usados por la app | Referencia para la integración nativa Google Play Billing |
 | **`AndroidManifest.xml`** | Manifiesto de Android optimizado para juegos infantiles | Configuración de permisos mínimos (`BILLING`) y pantalla vertical completa |
 | **`capacitor.config.json`** | Archivo de configuración del empaquetador nativo Capacitor | Enlace entre la app web y el contenedor Android nativo |
 | **`build_playstore.sh`** | Script automatizado para compilar y sincronizar | Ejecutable para generar la build web y transferirla a Android Studio |
-| **`politica_privacidad.md`** | Política de privacidad oficial (COPPA y Familias) | Enlace obligatorio en la ficha de tienda y dentro de la app |
+| **`politica_privacidad.md`** | Política de privacidad alineada con las prácticas actuales | Revisar y publicar en una URL HTTPS antes de enviar declaraciones |
 
 ---
 
@@ -50,15 +50,19 @@ npm run cap:open
   - [ ] Categoría: *Juegos > Arcade* o *Acción casual*.
   - [ ] Cuestionario IARC completado (calificación para Todo Público / PEGI 3 / ESRB Everyone).
 - [ ] **Programa Google Play Familias (Designed for Families)**:
-  - [ ] Público objetivo: Edades de 6 a 8 años, 9 a 12 años y más.
-  - [ ] Confirmar que no se recopila información personal identificable (PII) de menores.
+  - [ ] Público objetivo: Edades de 6 a 8 y de 9 a 12 años (confirmado por el responsable).
+  - [ ] Revisar el tratamiento de Google Play Billing antes de completar las declaraciones.
 - [ ] **Seguridad de los Datos (Data Safety)**:
-  - [ ] Indicar que la app no comparte datos con terceros y no recopila ubicación ni contactos.
-  - [ ] Enlace a la Política de Privacidad pública (`politica_privacidad.md`).
+  - [ ] Confirmar las respuestas actuales con las divulgaciones de Google Play Billing.
+  - [ ] Publicar y enlazar la página HTML de política de privacidad (`/politica_privacidad.html`).
+  - [ ] Nota: GitHub Pages no está disponible para este repositorio privado con el plan actual; cambiar la visibilidad, el plan o elegir otro alojamiento antes de enviar la URL.
 - [ ] **Monetización e IAP**:
-  - [ ] Catálogo importado desde `google-play-catalog.csv`.
+  - [ ] Crear los cinco productos de `google-play-catalog.json` y fijar sus precios en Play Console.
+  - [ ] Verificar cada SKU en una compra de prueba antes de publicar pruebas abiertas o cerradas.
   - [ ] Cuentas de prueba (licencias de prueba) añadidas para probar compras sandbox sin cobro real.
 - [ ] **Prueba Cerrada (Track Closed Testing)**:
-  - [ ] Subir el primer archivo `.aab` generado.
+  - [ ] Publicar en el track `alpha` (prueba cerrada) y añadir el grupo/correos de testers en Play Console.
   - [ ] Probar en al menos un dispositivo físico Android.
   - [ ] Enviar a revisión para lanzamiento a Producción.
+- [ ] **Prueba Abierta (Track Open Testing)**:
+  - [ ] Publicar en el track `beta` (prueba abierta), solo después de validar la prueba cerrada y las declaraciones de Play Console.

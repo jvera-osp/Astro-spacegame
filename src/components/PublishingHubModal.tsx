@@ -99,7 +99,7 @@ export const PublishingHubModal: React.FC<PublishingHubModalProps> = ({
                 Centro de Publicación Google Play & Facturación
               </h2>
               <span className="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded-full font-bold">
-                Play Billing v7.0
+                Play Billing v8.0
               </span>
             </div>
             <p className="text-[11px] text-slate-400">
@@ -216,7 +216,7 @@ export const PublishingHubModal: React.FC<PublishingHubModalProps> = ({
                   <div className="flex items-center gap-2">
                     <h3 className="font-bold text-sm text-white">Google Play Billing Client Integrado</h3>
                     <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-                    <span className="text-[11px] text-emerald-300 font-semibold">Listo para Producción</span>
+                    <span className="text-[11px] text-amber-300 font-semibold">Pendiente de pruebas con Google Play</span>
                   </div>
                   <p className="text-xs text-slate-400 mt-0.5">
                     ID de Paquete: <code className="text-amber-300">com.astroesquiva.spacegame</code> ·
@@ -248,10 +248,10 @@ export const PublishingHubModal: React.FC<PublishingHubModalProps> = ({
               <div>
                 <h4 className="text-xs font-bold text-white flex items-center gap-1.5">
                   <Download className="w-3.5 h-3.5 text-amber-400" />
-                  <span>Exportar Catálogo para Google Play Console</span>
+                  <span>Exportar borrador del catálogo</span>
                 </h4>
                 <p className="text-[11px] text-slate-400">
-                  Sube este archivo directamente en <em>Google Play Console &gt; Monetización &gt; Productos integrados</em>
+                  Crea los productos manualmente y verifica los campos/precios en Play Console; este CSV no se ha validado como importación oficial.
                 </p>
               </div>
 
@@ -261,7 +261,7 @@ export const PublishingHubModal: React.FC<PublishingHubModalProps> = ({
                   className="px-3 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs shadow-md active:scale-95 transition-all flex items-center gap-1.5"
                 >
                   <Download className="w-3.5 h-3.5" />
-                  <span>Descargar .CSV Oficial</span>
+                  <span>Descargar .CSV borrador</span>
                 </button>
 
                 <button
@@ -277,9 +277,9 @@ export const PublishingHubModal: React.FC<PublishingHubModalProps> = ({
             {/* In-app products table */}
             <div className="space-y-2">
               <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center justify-between">
-                <span>Catálogo de Productos Configurados ({GOOGLE_PLAY_PRODUCTS.length})</span>
+                <span>Productos de la app ({GOOGLE_PLAY_PRODUCTS.length})</span>
                 <span className="text-[11px] text-slate-500 font-normal">
-                  Precios en USD y micropagos para niños
+                  Precios de referencia; Play Console define el precio final
                 </span>
               </h4>
 
@@ -328,7 +328,7 @@ export const PublishingHubModal: React.FC<PublishingHubModalProps> = ({
                     <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
                       <div className="text-right mr-2">
                         <span className="text-sm font-black text-emerald-400">{prod.price}</span>
-                        <p className="text-[9px] text-slate-500 uppercase">Google Play</p>
+                        <p className="text-[9px] text-slate-500 uppercase">Precio de referencia</p>
                       </div>
 
                       <button
@@ -610,7 +610,7 @@ Un emocionante y colorido juego arcade diseñado especialmente para niños, dond
 • 🛸 Desbloquea Naves Increíbles: Cohete Arcoíris, Platillo Amistoso, Nave Gatito Cósmico y el legendario Halcón Dorado VIP.
 • 🛡️ Potenciadores Cósmicos: Escudos de protección, imanes que atraen estrellas y drones de rescate de vidas extra.
 • 🏆 Tabla de Clasificación: Compite sanamente superando tus mejores puntuaciones.
-• 🔒 100% Seguro para Familias: Cumple rigurosamente con la Política para Familias de Google Play (COPPA y GDPR-K). No recopila datos personales y cuenta con control parental matemático.
+• 👨‍👩‍👧‍👦 Diseñado para jugadores de 6 a 12 años. El progreso se guarda localmente y las compras se procesan con Google Play Billing.
 
 ¡Ponte tu traje de astronauta y despega hacia las estrellas!`,
                         'full_desc'
@@ -636,7 +636,7 @@ Un emocionante y colorido juego arcade diseñado especialmente para niños, dond
 • 🛸 Desbloquea Naves Increíbles: Cohete Arcoíris, Platillo Amistoso, Nave Gatito Cósmico y el legendario Halcón Dorado VIP.
 • 🛡️ Potenciadores Cósmicos: Escudos de protección, imanes que atraen estrellas y drones de rescate de vidas extra.
 • 🏆 Tabla de Clasificación: Compite sanamente superando tus mejores puntuaciones.
-• 🔒 100% Seguro para Familias: Cumple rigurosamente con la Política para Familias de Google Play (COPPA y GDPR-K).`}
+• 👨‍👩‍👧‍👦 Diseñado para jugadores de 6 a 12 años. El progreso se guarda localmente y las compras se procesan con Google Play Billing.`}
                 </div>
               </div>
             </div>
@@ -647,7 +647,7 @@ Un emocionante y colorido juego arcade diseñado especialmente para niños, dond
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
                 <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800">
                   <span className="font-bold text-amber-300 block">Icono de la App</span>
-                  <span className="text-[11px] text-slate-400">512 x 512 px (PNG 32-bit)</span>
+                  <span className="text-[11px] text-slate-400">512 x 512 px (PNG 32-bit); pendiente de exportar</span>
                 </div>
                 <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800">
                   <span className="font-bold text-cyan-300 block">Gráfico de Funciones</span>
@@ -673,24 +673,24 @@ Un emocionante y colorido juego arcade diseñado especialmente para niños, dond
                 </h3>
               </div>
               <p className="text-xs text-slate-400">
-                Usa estas respuestas exactas al llenar el cuestionario obligatorio de Google Play Console:
+                Revisa estas observaciones antes de responder el cuestionario de Google Play Console:
               </p>
 
               <div className="space-y-2 text-xs">
                 <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 flex justify-between items-center">
                   <div>
-                    <span className="text-slate-400 block text-[10px]">¿Tu app recopila o comparte datos personales?</span>
-                    <span className="text-emerald-400 font-bold">NO (0 datos personales recolectados)</span>
+                    <span className="text-slate-400 block text-[10px]">¿La app envía datos a un servidor del desarrollador?</span>
+                    <span className="text-emerald-400 font-bold">No se encontró un servidor propio ni SDK de analítica</span>
                   </div>
                   <span className="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded font-bold">
-                    Aprobado
+                    Revisar
                   </span>
                 </div>
 
                 <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 flex justify-between items-center">
                   <div>
-                    <span className="text-slate-400 block text-[10px]">¿Dónde se almacenan las puntuaciones y compras?</span>
-                    <span className="text-white font-bold">En el almacenamiento local del dispositivo (LocalStorage / Keystore)</span>
+                    <span className="text-slate-400 block text-[10px]">¿Dónde se almacenan el progreso y las transacciones?</span>
+                    <span className="text-white font-bold">Progreso en el dispositivo; Google Play gestiona las transacciones</span>
                   </div>
                   <span className="text-[10px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded font-bold">
                     Local
@@ -699,18 +699,18 @@ Un emocionante y colorido juego arcade diseñado especialmente para niños, dond
 
                 <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 flex justify-between items-center">
                   <div>
-                    <span className="text-slate-400 block text-[10px]">¿Cumple con la Política para Familias de Google Play?</span>
-                    <span className="text-emerald-400 font-bold">SÍ (Directivas COPPA &amp; GDPR-K con Control Parental)</span>
+                    <span className="text-slate-400 block text-[10px]">¿Está aprobada para el programa Familias?</span>
+                    <span className="text-amber-300 font-bold">Pendiente de revisión de Google Play; no declarar cumplimiento aún</span>
                   </div>
-                  <span className="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded font-bold">
-                    Familias
+                  <span className="text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2 py-0.5 rounded font-bold">
+                    Pendiente
                   </span>
                 </div>
 
                 <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 flex justify-between items-center">
                   <div>
                     <span className="text-slate-400 block text-[10px]">¿Contiene SDKs de anuncios de terceros?</span>
-                    <span className="text-emerald-400 font-bold">NO (Experiencia 100% limpia sin publicidad)</span>
+                    <span className="text-emerald-400 font-bold">No se encontraron integraciones de anuncios</span>
                   </div>
                   <span className="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded font-bold">
                     Sin Ads

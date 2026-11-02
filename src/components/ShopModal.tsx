@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { SpaceshipDef, AccessoryDef, IapProduct, ConsumableItem, PlayerInventory } from '../types/game';
-import { IAP_PRODUCTS, CONSUMABLE_ITEMS } from '../data/storeCatalog';
+import { CONSUMABLE_ITEMS } from '../data/storeCatalog';
 import { sounds } from '../audio/soundEffects';
 import { X, Star, Gem, Check, Lock, Gift, Sparkles, Shield, Magnet, Zap, Heart, Award } from 'lucide-react';
 
@@ -12,6 +12,8 @@ interface ShopModalProps {
   accessories: AccessoryDef[];
   activeAccessoryId: string;
   inventory: PlayerInventory;
+  iapProducts: IapProduct[];
+  billingError: string | null;
   highScore: number;
   lifetimeDodges: number;
   bestSingleDodges: number;
@@ -37,6 +39,8 @@ export const ShopModal: React.FC<ShopModalProps> = ({
   accessories,
   activeAccessoryId,
   inventory,
+  iapProducts,
+  billingError,
   highScore,
   lifetimeDodges,
   bestSingleDodges,
@@ -521,7 +525,7 @@ export const ShopModal: React.FC<ShopModalProps> = ({
                 <div>
                   <p className="text-xs font-bold text-emerald-300">Google Play Billing Oficial</p>
                   <p className="text-[11px] text-slate-300">
-                    Precios justos, recibos GPA y control parental con reto matemático para niños.
+                    Precios y confirmación de pago proporcionados por Google Play.
                   </p>
                 </div>
               </div>
@@ -539,8 +543,14 @@ export const ShopModal: React.FC<ShopModalProps> = ({
               </div>
             </div>
 
+            {billingError && (
+              <p role="alert" className="rounded-xl border border-rose-500/40 bg-rose-950/40 p-3 text-xs text-rose-200">
+                {billingError}
+              </p>
+            )}
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {IAP_PRODUCTS.map((prod) => (
+              {iapProducts.map((prod) => (
                 <div
                   key={prod.id}
                   className={`p-3.5 rounded-2xl border flex flex-col justify-between gap-3 relative overflow-hidden ${
@@ -574,9 +584,10 @@ export const ShopModal: React.FC<ShopModalProps> = ({
                       sounds.playButtonTap();
                       onOpenIapModal(prod);
                     }}
-                    className="w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black text-xs shadow-md shadow-emerald-500/20 active:scale-95 transition-all flex items-center justify-center gap-1.5"
+                    disabled={!prod.available}
+                    className="w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black text-xs shadow-md shadow-emerald-500/20 active:scale-95 transition-all flex items-center justify-center gap-1.5 disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    <span>Comprar por {prod.priceUsd}</span>
+                    <span>{prod.available ? `Comprar por ${prod.priceUsd}` : 'No disponible en Google Play'}</span>
                   </button>
                 </div>
               ))}

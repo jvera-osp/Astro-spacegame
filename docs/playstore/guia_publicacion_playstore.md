@@ -113,24 +113,23 @@ Este archivo `.aab` es el que subirás directamente a Google Play Console.
    - **Gráfico de funciones (Banner)**: 1024 x 500 px.
    - **Capturas de pantalla para teléfono**: Mínimo 4 capturas en orientación vertical.
 
+   Recursos preparados en `docs/playstore/`: `playstore-icon.png`, `feature-graphic.png` y `store-screenshot-01.png` a `store-screenshot-04.png`. Las capturas son de 360 x 640 px (9:16) y muestran el menú, una partida, los ajustes y la pausa; cumplen los límites del listado, pero no alcanzan los 1080 px que Google pide para participar en promociones de la ficha.
+
 ---
 
 ## 7. Configurar Compras Integradas (Google Play Billing)
 
-El juego cuenta con un catálogo de productos configurado que se encuentra en `docs/playstore/google-play-catalog.csv`.
+La integración nativa usa Google Play Billing 8. Los productos todavía deben crearse y activarse en Play Console; sus precios que se muestran en la app se consultan desde Google Play.
 
 ### Pasos para activar los pagos en Google Play:
 1. En Google Play Console, ve a **Monetización** > **Productos integrados** (In-app products).
-2. Tienes dos opciones:
-   - **Opción Rápida (Importar CSV)**: Haz clic en **Importar** y selecciona el archivo `docs/playstore/google-play-catalog.csv`.
-   - **Opción Manual**: Crear cada producto con los IDs:
-     * `coins_100` (100 Monedas Cósmicas - Consumible - $0.99 USD)
-     * `coins_500` (500 Monedas Cósmicas - Consumible - $2.99 USD)
-     * `coins_1500` (1500 Monedas Cósmicas - Consumible - $6.99 USD)
-     * `skin_neon_voyager` (Nave Neón Cósmica - No Consumible - $1.99 USD)
-     * `skin_cosmic_dragon` (Nave Dragón Cósmico - No Consumible - $2.99 USD)
-     * `remove_ads` (Eliminar Anuncios y Pase Estelar - No Consumible - $3.99 USD)
-3. **Activar cada producto**: Asegúrate de que el estado figure como **Activo** (Active).
+2. Crea y activa los cinco productos indicados en `docs/playstore/google-play-catalog.json`:
+   * `iap_starter_pack` (consumible)
+   * `iap_pocket_stars` (consumible)
+   * `iap_galactic_chest` (consumible)
+   * `iap_cosmic_vault` (consumible)
+   * `astro_vip_astronaut_pass` (no consumible)
+3. Configura los precios definitivos y localizados directamente en Play Console. Los valores del catálogo son solo una propuesta inicial.
 4. **Configurar cuentas de prueba**:
    - Ve a **Configuración** > **Pruebas de licencia**.
    - Agrega tu cuenta de Google personal (@gmail.com).
@@ -138,33 +137,28 @@ El juego cuenta con un catálogo de productos configurado que se encuentra en `d
 
 ---
 
-## 8. Cumplimiento de la Política Infantil (Familias y COPPA)
+## 8. Público objetivo y declaraciones
 
 Dado que *Astro Esquiva* está pensado para toda la familia y niños:
 
-1. **Público Objetivo**:
-   - Selecciona los grupos de edad: **6-8 años**, **9-12 años** y **13 años o más**.
-2. **Declaración de Anuncios**:
-   - En la sección de contenido de la app, declara si la app contiene anuncios. Si contiene anuncios para niños, estos deben provenir de una red publicitaria certificada por Google para familias (ej. Google AdMob con etiqueta infantil).
-3. **Seguridad de los Datos (Data Safety)**:
-   - Especifica que **NO recopilas información personal identificable** de menores (no se pide nombre real, dirección, teléfono ni geolocalización exacta).
-4. **Enlace a la Política de Privacidad**:
-   - Sube el contenido del archivo `docs/playstore/politica_privacidad.md` a un servicio web accesible públicamente (como GitHub Pages, Notion público o tu sitio web) y pega la URL en la sección *Política de Privacidad* de Google Play Console.
+1. **Público objetivo**: el responsable confirmó las edades de **6-8** y **9-12** años. No incluyas grupos de edad adicionales sin volver a confirmarlo.
+2. **Anuncios**: el responsable confirmó que no hay anuncios. Revisa esta respuesta si se incorpora una integración de anuncios.
+3. **Seguridad de los Datos**: el progreso del juego permanece en el dispositivo y no hay servidor propio ni analítica. Google Play Billing procesa pagos y puede tratar datos de compra, dispositivo y diagnóstico; responde según las divulgaciones actuales del servicio y la guía de Play Console, no afirmes que no se trata ningún dato.
+4. **Política de Privacidad**: publica `public/politica_privacidad.html` en una URL HTTPS accesible y usa esa URL. No envíes una URL hasta verificar que la página está disponible públicamente.
 
 ---
 
 ## 9. Publicación y Revisión
 
-1. Ve a **Producción** (o **Prueba cerrada** si prefieres probar antes con amigos y familiares).
-2. Crea una nueva versión (Release) y sube el archivo `app-release.aab`.
-3. Escribe las notas de la versión:
+1. Prueba cerrada: usa el track `alpha` del workflow (Prueba cerrada en Play Console) y añade los testers en Play Console.
+2. Prueba abierta: usa el track `beta` del workflow (Prueba abierta en Play Console) después de revisar la prueba cerrada.
+3. Producción: no selecciones `production` durante las pruebas.
+4. Ve al track correspondiente y crea una nueva versión.
+5. Escribe las notas de la versión:
    ```
    ¡Lanzamiento inicial de Astro Esquiva: Aventura Espacial!
-   - Esquiva asteroides, satélites y naves extraterrestres.
+   - Esquiva asteroides, ovnis amistosos y cometas.
    - Controles táctiles sencillos y divertidos.
    - Tienda de naves y personalización.
-   - Apta y segura para toda la familia.
    ```
-4. Haz clic en **Revisar versión** y luego en **Comenzar lanzamiento a Producción**.
-5. El equipo de Google Play suele revisar la aplicación en un plazo de **24 a 72 horas** (las apps dirigidas a niños pasan por una revisión minuciosa para comprobar que no recopilen datos indebidos).
-6. Una vez aprobada, tu juego estará disponible en todo el mundo a través de la Google Play Store. 🎉
+6. Revisa y envía la versión del track de prueba seleccionado. No inicies un lanzamiento a Producción desde esta guía.

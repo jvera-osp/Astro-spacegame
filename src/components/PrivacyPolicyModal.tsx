@@ -108,49 +108,45 @@ export const PrivacyPolicyModal: React.FC<PrivacyPolicyModalProps> = ({ onClose 
             <div className="p-3 bg-emerald-950/40 border border-emerald-500/40 rounded-2xl flex items-center gap-2.5">
               <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
               <p className="text-[11px] text-emerald-200 font-semibold leading-snug">
-                <strong>Compromiso 100% Infantil Seguro:</strong> Cumplimos de manera estricta con las directrices de Google Play Designed for Families, COPPA (EE. UU.) y RGPD-K (Unión Europea).
+                <strong>Privacidad para familias:</strong> Esta información describe las prácticas actuales de la aplicación y se actualizará si cambian.
               </p>
             </div>
 
-            {/* Section 1: Compromiso con los Niños (COPPA & GDPR-K) */}
             <div className="p-3 bg-slate-900/80 rounded-2xl border border-slate-800 space-y-1.5">
               <h3 className="font-bold text-white text-sm flex items-center gap-1.5 text-amber-300">
                 <Heart className="w-4 h-4 text-rose-400 fill-rose-400" />
-                <span>1. Cero Recopilación de Datos Personales</span>
+                <span>1. Información y perfil del jugador</span>
               </h3>
               <p className="text-[11px] text-slate-400">
-                Astro Esquiva <strong>no recopila, no almacena ni comparte</strong> ningún tipo de información de identificación personal (PII). No solicitamos nombres completos, correos electrónicos de los niños, números de teléfono, ubicación geográfica GPS, fotografías, contactos ni identificadores de publicidad dirigidos a menores.
+                No se requiere una cuenta. El apodo es texto libre y se guarda en el dispositivo; recomendamos no introducir nombres reales ni datos de contacto. La aplicación no integra anuncios ni analítica.
               </p>
             </div>
 
-            {/* Section 2: Datos y Almacenamiento Local */}
             <div className="p-3 bg-slate-900/80 rounded-2xl border border-slate-800 space-y-1.5">
               <h3 className="font-bold text-white text-sm text-cyan-300">
-                2. Almacenamiento Exclusivamente Local
+                2. Progreso local
               </h3>
               <p className="text-[11px] text-slate-400">
-                Todo el progreso del juego —incluyendo los récords de esquiva, monedas espaciales ganadas, naves espaciales desbloqueadas y preferencias de controles— se guarda <strong>únicamente en la memoria local del dispositivo</strong> del jugador (LocalStorage / SharedPreferences). Ningún registro o archivo de partida se transfiere a servidores externos.
+                La puntuación, monedas virtuales, naves desbloqueadas y preferencias se guardan en el almacenamiento local de la aplicación y no se envían a servidores del desarrollador. Android puede aplicar sus propias funciones de copia de seguridad.
               </p>
             </div>
 
-            {/* Section 3: Compras Integradas y Control Parental */}
             <div className="p-3 bg-slate-900/80 rounded-2xl border border-slate-800 space-y-1.5">
               <h3 className="font-bold text-white text-sm flex items-center gap-1.5 text-pink-300">
                 <Lock className="w-4 h-4 text-pink-400" />
-                <span>3. Facturación Oficial y Barrera Parental (Parental Gate)</span>
+                <span>3. Compras dentro de la aplicación</span>
               </h3>
               <p className="text-[11px] text-slate-400">
-                Las compras dentro de la aplicación se realizan de forma segura mediante <strong>Google Play Billing</strong> de Google LLC. Para evitar compras involuntarias por parte de menores, la aplicación integra un desafío matemático de verificación para adultos (Parental Gate) antes de desplegar cualquier ventana de pago. Los desarrolladores nunca tienen acceso a datos de tarjetas de crédito o credenciales de pago.
+                Google Play Billing procesa el pago. Astro Esquiva recibe el producto y el estado de la compra para entregar el contenido; no recibe datos de tarjetas ni credenciales. Google Play puede tratar datos de compra, dispositivo y diagnóstico según sus propias políticas. La aplicación presenta una comprobación para una persona adulta y Google Play muestra su confirmación de compra.
               </p>
             </div>
 
-            {/* Section 4: Publicidad y Rastreo */}
             <div className="p-3 bg-slate-900/80 rounded-2xl border border-slate-800 space-y-1.5">
               <h3 className="font-bold text-white text-sm text-amber-300">
-                4. Cero Publicidad Engañosa o Inapropiada
+                4. Servicios y contacto
               </h3>
               <p className="text-[11px] text-slate-400">
-                El juego está completamente libre de redes publicitarias externas no certificadas, banners invasivos o enlaces emergentes hacia sitios web de terceros. El juego es un entorno lúdico protegido.
+                La aplicación necesita Internet para comunicarse con Google Play Billing. No integra chat, multijugador en línea ni servicios propios que recojan o sincronicen el progreso. Para consultas de privacidad, escribe a {supportEmail}.
               </p>
             </div>
 

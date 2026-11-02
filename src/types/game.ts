@@ -60,6 +60,7 @@ export interface IapProduct {
   coins: number;
   gems: number;
   priceUsd: string;
+  available?: boolean;
   badge?: string;
   bonusDesc: string;
   isPopular?: boolean;
